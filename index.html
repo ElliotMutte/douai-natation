@@ -74,6 +74,9 @@ td.r,th.r{text-align:right}
 .subtabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .grid-t td,.grid-t th{text-align:center}.grid-t td:first-child,.grid-t th:first-child{text-align:left}
 .chip{display:inline-block;margin:2px 4px 2px 0;padding:3px 8px;border-radius:8px;background:#e8f5e9;color:#1b5e20;font-size:12px;white-space:nowrap}.chip.close{background:#fff3e0;color:#e65100}
+@media print{header,footer,nav,.noprint,.filters,#v-nageurs,#v-club,#v-cnc,#v-records,#v-interclubs,#v-qualifs,#v-entrainement,#v-echeances,details{display:none!important}
+ body{background:#fff}.card{break-inside:avoid;border-color:#ccc}main{padding:0;max-width:none}#v-fiche{display:block!important;margin:0!important}#v-fiche>h2{display:none}
+ .scroll{max-height:none!important;overflow:visible!important}}
 footer{color:var(--mute);font-size:12px;text-align:center;padding:20px}
 @media(max-width:600px){.top3{grid-template-columns:1fr}.brand h1{font-size:22px}}
 #nav button[data-v=entrainement]{display:none}
@@ -103,6 +106,7 @@ footer{color:var(--mute);font-size:12px;text-align:center;padding:20px}
       <div class="card kpi"><div class="lab">Classement départemental</div><div class="num" id="kDep">–</div><div class="sub" id="kDepSub">Nord</div></div>
       <div class="card kpi"><div class="lab">Points CNC</div><div class="num" id="kPts">–</div><div class="sub" id="kPtsSub"></div></div>
     </div>
+    <div class="card" style="margin-top:14px" id="newsCard"></div>
     <div class="grid two" style="margin-top:14px">
       <div class="card"><h2>Top 10 du club · saison en cours (meilleure perf en points FFN)</h2><div id="top10" style="overflow-x:auto"></div></div>
       <div class="card"><h2>Effectif par catégorie</h2><div id="effectif" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))"></div></div>
@@ -207,9 +211,11 @@ footer{color:var(--mute);font-size:12px;text-align:center;padding:20px}
       <button data-q="lvl" data-niv="National">National · France</button>
       <button data-q="pts">Table des points FFN</button>
       <button data-q="qualifies">Nageurs qualifiés</button>
+      <button data-q="engage">Préparer les engagements</button>
     </div>
     <div id="q-lvl"></div>
     <div id="q-pts" class="card hide"></div>
+    <div id="q-engage" class="card hide"></div>
     <div id="q-qualifies" class="card hide">
       <div class="filters"><select id="qNiv"></select><select id="qComp2"></select>
         <select id="qNage"><option value="">Toutes les nages</option><option value="NL">Nage libre</option><option value="Dos">Dos</option><option value="Brasse">Brasse</option><option value="Pap">Papillon</option><option value="4N">4 nages</option></select>
@@ -349,6 +355,7 @@ function renderFiche(id){
   const d0=s.top3[0]||s.top3c[0]; const defEv=d0?d0.e+'|'+d0.b:events[0];
   const quals=allQualifs().filter(q=>q.sexe===s.sexe&&inYears(s.an,q.ans)).map(q=>{const b=qBest(s,q.epr,q.bas,'saison');const bc=qBest(s,q.epr,q.bas,'mpp');return {...q,b,bc,d:b?b.s-tsec(q.tps):NaN}}).filter(q=>q.bc);
   $('#fiche').innerHTML=`
+  <div class="noprint" style="text-align:right;margin-bottom:6px"><button class="btn ghost" id="printBtn">Imprimer / enregistrer en PDF</button> <span id="printMsg" class="small muted"></span></div>
   <div class="card"><div class="hero"><div class="avatar">${esc(initials)}</div><div style="flex:1">
     <h2>${esc(s.nom)}</h2><div class="chips"><span class="pill ${s.sexe}">${s.sexe==='F'?'Nageuse':'Nageur'}</span><span class="pill" title="Âge sportif FFN : âge atteint au cours de l'année ${META.refYear}">né(e) en ${s.an} · ${s.age} ans en ${META.refYear}</span><span class="pill">${s.cat}${s.cat!=='Seniors'?' · '+CATNAME[s.cat]:''}</span>${s.acat!==s.cat?`<span class="pill">${s.acat}</span>`:''}${grpOf(s)?`<span class="pill">Groupe ${esc(grpOf(s))}</span>`:''}<span class="pill">Spés : ${esc(speOf(s))}</span></div></div>
     <div class="kpi" style="text-align:right"><div class="lab">Rang au club</div><div class="num">${s.rang||'–'}<span class="small muted"> / ${META.nRanked}</span></div><div class="small muted">saison ${META.season}</div></div></div></div>
@@ -398,6 +405,7 @@ function renderFiche(id){
   <div class="card" style="margin-top:14px"><h3>Toutes les performances</h3><div class="scroll" style="max-height:420px"><table><thead><tr><th>Date</th><th>Épreuve</th><th>Bassin</th><th class="r">Temps</th><th class="r">Points</th><th>Niveau</th><th>Lieu</th><th>Club</th></tr></thead><tbody>
   ${[...s.perfs].reverse().map(p=>`<tr><td>${fdate(p.d)}</td><td>${evName(p.e)}</td><td>${p.b} m</td><td class="r"><b>${p.t}</b>${s.best[p.e+'|'+p.b]===p?' <span class="pill t120">MPP</span>':''}</td><td class="r">${p.pts}</td><td><span class="lvl ${p.niv}">${p.niv}</span></td><td>${esc(p.lieu)}</td><td class="small muted">${esc(p.club||'Douai Natation 1897')}</td></tr>`).join('')}
   </tbody></table></div></div>`;
+  $('#printBtn').onclick=()=>{try{document.body.classList.add('print-fiche');window.print();setTimeout(()=>document.body.classList.remove('print-fiche'),500)}catch(e){$('#printMsg').textContent="L'impression n'est pas disponible ici : utilise le site public ou la copie autonome."}};
   let trains=[...(f.train||[])];
   const drawTrain=()=>{$('#tList').innerHTML=trains.length?trains.map((t,i)=>`${fdate(t.d)} · ${evName(t.e)} ${t.b}m · <b>${esc(t.t)}</b> <span class="link" data-del="${i}">✕</span>`).join('<br>'):'<span class="muted">Aucun temps d’entraînement.</span>'};
   drawTrain();
@@ -697,6 +705,36 @@ function lineSVG(el,comp,train){const all=[...comp,...train];if(!all.length){el.
    ${c.map(p=>`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="5" fill="#1565c0" stroke="#fff" stroke-width="1.5"><title>${esc(p.tip)}</title></circle>`).join('')}
    ${train.map(p=>`<path d="M${X(p.x)} ${Y(p.y)-7} l6 11 h-12z" fill="#fb8c00"><title>${esc(p.tip)}</title></path>`).join('')}</svg>`;}
 
+
+// ---------- nouveautés de la semaine ----------
+function renderNews(){const end=META.updated.split('/').reverse().join('-');const d0=new Date(end);d0.setDate(d0.getDate()-10);const start=d0.toISOString().slice(0,10);
+  const pbs=[],qs=[];
+  const Q=(META.qualifs||[]).filter(q=>q.tps);
+  for(const s of SW){const recent=s.perfs.filter(p=>p.d>start&&p.d<=end);if(!recent.length)continue;
+    for(const p of recent){const before=s.perfs.filter(x=>x.e===p.e&&x.b===p.b&&x.d<=start);const prev=before.length?before.reduce((a,c)=>c.s<a.s?c:a):null;
+      if(prev&&p.s<prev.s&&s.best[p.e+'|'+p.b]===p)pbs.push({s,p,gain:prev.s-p.s});
+      for(const q of Q){if(q.sexe!==s.sexe||s.an<q.y1||s.an>q.y2||q.epr!==p.e||(q.bas!=='tous'&&q.bas!=p.b))continue;const lim=tsec(q.tps);
+        if(p.s<=lim&&!before.some(x=>x.s<=lim&&seasonOf(x.d)===META.season))qs.push({s,p,q});}}}
+  const uq={};qs.forEach(x=>{const k=x.s.id+x.q.comp+x.p.e;if(!uq[k]||x.q.niv==='National')uq[k]=x});const QL=Object.values(uq).sort((a,b)=>['National','Régional','Départemental'].indexOf(a.q.niv)-['National','Régional','Départemental'].indexOf(b.q.niv));
+  $('#newsCard').innerHTML=`<h2>Nouveautés · ${fdate(start)} au ${META.updated}</h2>${!pbs.length&&!QL.length?'<p class="muted">Pas de nouvelle performance sur cette période.</p>':`<div class="grid two">
+   <div><h3>Records personnels battus (${pbs.length})</h3>${pbs.sort((a,b)=>b.p.pts-a.p.pts).slice(0,15).map(x=>`<div class="small" style="padding:4px 0;border-bottom:1px solid var(--line)">${nageurLink(x.s)} · ${evName(x.p.e)} ${x.p.b} m <b>${x.p.t}</b> <span class="better">−${x.gain.toFixed(2)} s</span></div>`).join('')}${pbs.length>15?`<p class="small muted">… et ${pbs.length-15} autres.</p>`:''}</div>
+   <div><h3>Nouveaux temps qualificatifs (${QL.length})</h3>${QL.slice(0,15).map(x=>`<div class="small" style="padding:4px 0;border-bottom:1px solid var(--line)">${nageurLink(x.s)} · <b>${esc(x.q.comp)}</b> <span class="muted">${esc(x.q.cat)}</span> · ${evName(x.p.e)} ${x.p.t} <span class="muted">(limite ${x.q.tps.replace(/^00:/,'')})</span></div>`).join('')||'<p class="small muted">Aucun cette fois.</p>'}</div></div>`}`;}
+// ---------- préparer les engagements ----------
+let ENG={comp:null,src:'saison'};
+function renderEngage(){const comps=[...new Set((META.qualifs||[]).filter(q=>q.tps).map(q=>q.niv+'|'+q.comp))];if(!ENG.comp)ENG.comp=comps.find(c=>c.includes('Championnats du Nord'))||comps[0];
+  const [niv,comp]=ENG.comp.split('|');const Q=(META.qualifs||[]).filter(q=>q.tps&&q.comp===comp);
+  const rows=[];for(const s of SW){const L=[];for(const q of Q){if(q.sexe!==s.sexe||s.an<q.y1||s.an>q.y2)continue;const b=qBest(s,q.epr,q.bas,ENG.src);if(!b)continue;const lim=tsec(q.tps);if(b.s<=lim*1.03)L.push({q,b,ok:b.s<=lim,gap:b.s-lim})}
+    if(L.length)rows.push({s,L:L.sort((a,b)=>a.gap/tsec(a.q.tps)-b.gap/tsec(b.q.tps))})}
+  rows.sort((a,b)=>b.L.filter(x=>x.ok).length-a.L.filter(x=>x.ok).length||a.s.nom.localeCompare(b.s.nom));
+  $('#q-engage').innerHTML=`<h2>Préparer les engagements</h2><div class="filters"><select id="engComp">${comps.map(c=>`<option value="${esc(c)}" ${c===ENG.comp?'selected':''}>${esc(c.split('|')[1])} · ${esc(c.split('|')[0])}</option>`).join('')}</select>
+   <select id="engSrc"><option value="saison" ${ENG.src==='saison'?'selected':''}>Temps de la saison</option><option value="12m" ${ENG.src==='12m'?'selected':''}>12 derniers mois</option><option value="mpp" ${ENG.src==='mpp'?'selected':''}>Meilleurs temps de carrière</option></select>
+   <button class="btn" id="engCopy">Copier la liste cochée</button><span id="engMsg" class="save"></span></div>
+   <p class="small muted">Pour chaque nageur : épreuves où il a le temps limite (vert, cochées par défaut) ou en est à moins de 3 % (orange). Coche ou décoche, puis copie la liste pour tes engagements.</p>
+   <div style="overflow-x:auto"><table><thead><tr><th>Nageur</th><th>Cat.</th><th>Épreuves</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${nageurLink(r.s)}</td><td>${r.s.cat}</td><td style="white-space:normal">${r.L.map(x=>`<label class="chip ${x.ok?'':'close'}" style="cursor:pointer"><input type="checkbox" class="engCb" data-n="${esc(r.s.nom)}" data-e="${esc(evName(x.q.epr))}${x.q.bas!=='tous'?' '+x.q.bas+'m':''}" data-t="${x.b.t}" ${x.ok?'checked':''}> ${evName(x.q.epr)}${x.q.bas!=='tous'?' '+x.q.bas+'m':''} · ${x.b.t} / ${x.q.tps.replace(/^00:/,'')}</label>`).join('')}</td></tr>`).join('')||'<tr><td colspan="3" class="muted">Aucun nageur proche des temps de cette compétition.</td></tr>'}</tbody></table></div>`;
+  $('#engComp').onchange=e=>{ENG.comp=e.target.value;renderEngage()};$('#engSrc').onchange=e=>{ENG.src=e.target.value;renderEngage()};
+  $('#engCopy').onclick=async()=>{const by={};document.querySelectorAll('.engCb:checked').forEach(c=>{(by[c.dataset.n]=by[c.dataset.n]||[]).push(c.dataset.e+' ('+c.dataset.t+')')});
+    const txt=`Engagements · ${comp}\n`+Object.entries(by).map(([n,l])=>`- ${n} : ${l.join(', ')}`).join('\n');try{await navigator.clipboard.writeText(txt);$('#engMsg').textContent='Copié ✓'}catch(e){$('#engMsg').textContent='Copie impossible ici'}};}
+
 // ---------- persistance (base partagée de la page, sinon cet appareil) ----------
 function local(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem('dn1897_'+k)||'null');localStorage.setItem('dn1897_'+k,JSON.stringify(v))}catch(e){return null}}
 async function persist(path,doc){
@@ -722,7 +760,7 @@ function rerender(){ if(VIEW==='nageurs'){renderNageurs();} else if(VIEW==='qual
 const GROUPS={club:['club','cnc','records'],nageurs:['nageurs','fiche'],interclubs:['interclubs'],qualifs:['qualifs'],entrainement:['entrainement'],echeances:['echeances']};
 function show(v,id){ if(v==='fiche'||v==='cnc'||v==='records'){ return show(v==='fiche'?'nageurs':'club',id); }
   VIEW=v;$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));const vis=GROUPS[v];$$('main>section').forEach(s=>s.classList.toggle('hide',!vis.includes(s.id.slice(2))));
-  if(v==='club'){renderClub();renderCNC();renderRecords()}if(v==='entrainement'){renderGroup();renderPlan()}if(v==='echeances'){renderEch()}
+  if(v==='club'){renderNews();renderClub();renderCNC();renderRecords()}if(v==='entrainement'){renderGroup();renderPlan()}if(v==='echeances'){renderEch()}
   if(v==='nageurs'){renderNageurs();FICHE=id||FICHE||SW.filter(s=>s.rang).sort((a,b)=>a.rang-b.rang)[0].id;renderFiche(FICHE);}
   if(v==='interclubs')renderInterclubs();if(v==='qualifs')renderQualifs();
   try{history.replaceState(null,'','#'+v)}catch(e){}
@@ -738,7 +776,7 @@ async function boot(){
   $('#cTier').innerHTML='<option value="">Tous les paliers</option>'+[240,160,120,80,60,40,20,10,5,0].map(v=>`<option value="${v}">${v?v+' pts':'Pas encore de points'}</option>`).join('');
   $('#qNiv').innerHTML='<option value="">Tous les niveaux</option>'+NIVS.map(n=>`<option>${n}</option>`).join('');
   $('#qNiv').onchange=()=>{$('#qComp2').value='';renderQualifies()}; ['#qComp2','#qNage','#qSx','#qSrc','#qClose'].forEach(x=>$(x).onchange=renderQualifies);
-  $$('#v-qualifs .subtabs button').forEach(b=>b.onclick=()=>{$$('#v-qualifs .subtabs button').forEach(x=>x.classList.toggle('on',x===b));const q=b.dataset.q;$('#q-lvl').classList.toggle('hide',q!=='lvl');$('#q-pts').classList.toggle('hide',q!=='pts');$('#q-qualifies').classList.toggle('hide',q!=='qualifies');if(q==='lvl'){QNIV=b.dataset.niv;renderLevel()}});
+  $$('#v-qualifs .subtabs button').forEach(b=>b.onclick=()=>{$$('#v-qualifs .subtabs button').forEach(x=>x.classList.toggle('on',x===b));const q=b.dataset.q;$('#q-lvl').classList.toggle('hide',q!=='lvl');$('#q-pts').classList.toggle('hide',q!=='pts');$('#q-qualifies').classList.toggle('hide',q!=='qualifies');$('#q-engage').classList.toggle('hide',q!=='engage');if(q==='engage')renderEngage();if(q==='lvl'){QNIV=b.dataset.niv;renderLevel()}});
   $('#qEpr').innerHTML=EVORDER.map(e=>`<option value="${e}">${evName(e)}</option>`).join('');
   $('#fSel').innerHTML=[...SW].sort((a,b)=>a.nom.localeCompare(b.nom)).map(s=>`<option value="${s.id}">${esc(s.nom)} (${s.an})</option>`).join('');
   fillGroups();
