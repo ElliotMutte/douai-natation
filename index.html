@@ -79,6 +79,13 @@ td.r,th.r{text-align:right}
  .scroll{max-height:none!important;overflow:visible!important}}
 footer{color:var(--mute);font-size:12px;text-align:center;padding:20px}
 @media(max-width:600px){.top3{grid-template-columns:1fr}.brand h1{font-size:22px}}
+.refresh{display:inline-flex;align-items:center;gap:6px;margin-left:14px;padding:7px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.14);color:#fff;font:600 13px/1 inherit;font-family:inherit;cursor:pointer;white-space:nowrap}
+.refresh:hover{background:rgba(255,255,255,.26)}
+.refresh:disabled{opacity:.7;cursor:wait}
+.refresh.spin svg{animation:rfspin .8s linear infinite}
+@keyframes rfspin{to{transform:rotate(360deg)}}
+.refresh-msg{margin-left:10px;font-size:12px;color:#fff;opacity:.95;max-width:320px}
+@media(max-width:700px){.refresh span{display:none}.refresh{padding:7px 9px;margin-left:8px}.refresh-msg{display:block;margin:4px 0 0}}
 #nav button[data-v=entrainement]{display:none}
 </style>
 </head>
@@ -87,6 +94,8 @@ footer{color:var(--mute);font-size:12px;text-align:center;padding:20px}
   <div class="brand">
     <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#fff" opacity=".15"/><path d="M6 24c4 0 4-3 8-3s4 3 8 3 4-3 8-3 4 3 4 3M6 30c4 0 4-3 8-3s4 3 8 3 4-3 8-3 4 3 4 3" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="24" cy="12" r="3.2" fill="#fff"/></svg>
     <div><h1>DOUAI NATATION 1897</h1><small id="sub">Performances FFN · extranat</small></div>
+    <button id="refreshBtn" class="refresh noprint" type="button" title="Charger les derniers résultats publiés"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg><span>Rafraîchir les résultats</span></button>
+    <span id="refreshMsg" class="refresh-msg noprint" role="status"></span>
   </div>
   <nav id="nav">
     <button data-v="club" class="on">Club &amp; points CNC</button>
@@ -766,6 +775,24 @@ function show(v,id){ if(v==='fiche'||v==='cnc'||v==='records'){ return show(v===
   try{history.replaceState(null,'','#'+v)}catch(e){}
   if(id&&v==='nageurs'){$('#v-fiche').scrollIntoView({behavior:'smooth'})}else window.scrollTo(0,0);}
 
+async function refreshData(){
+  const b=$('#refreshBtn'), m=$('#refreshMsg'); b.disabled=true; b.classList.add('spin'); m.textContent='Recherche des derniers résultats…';
+  try{
+    if(location.protocol==='file:'){m.textContent=`Copie hors ligne (données du ${META.updated}) : ouvre le site en ligne pour les derniers résultats.`;return}
+    const t=Date.now(); let upd;
+    if(document.getElementById('data')){
+      const html=await (await fetch(location.pathname+'?t='+t,{cache:'no-store'})).text();
+      const el=new DOMParser().parseFromString(html,'text/html').getElementById('data'); upd=el&&JSON.parse(el.textContent).meta.updated;
+    }else{
+      const jj=await (await fetch('data.json?t='+t,{cache:'no-store'})).json(); upd=jj.meta&&jj.meta.updated;
+    }
+    if(!upd) throw new Error('vide');
+    if(upd!==META.updated){m.textContent=`Nouveaux résultats (${upd}) : rechargement…`;
+      setTimeout(()=>{ if(document.getElementById('data')) location.replace(location.pathname+'?t='+t+location.hash); else location.reload(); },600);
+    }else m.textContent=`Déjà à jour : résultats extranat du ${upd}. Mise à jour automatique chaque lundi soir.`;
+  }catch(e){m.textContent='Impossible de vérifier pour le moment, réessaie plus tard.'}
+  finally{b.disabled=false;b.classList.remove('spin')}
+}
 async function boot(){
   const j=JSON.parse(document.getElementById('data').textContent); DATA=j.swimmers; META=j.meta; RK=j.rankings||{};
   prep();
@@ -780,6 +807,7 @@ async function boot(){
   $('#qEpr').innerHTML=EVORDER.map(e=>`<option value="${e}">${evName(e)}</option>`).join('');
   $('#fSel').innerHTML=[...SW].sort((a,b)=>a.nom.localeCompare(b.nom)).map(s=>`<option value="${s.id}">${esc(s.nom)} (${s.an})</option>`).join('');
   fillGroups();
+  $('#refreshBtn').onclick=refreshData;
   $('#nav').onclick=e=>{const v=e.target.dataset.v;if(v)show(v)};
   document.body.addEventListener('click',e=>{const id=e.target.dataset?.open;if(id){show('nageurs',id)}
     const qd=e.target.dataset?.qdel;if(qd!==undefined){manual.qualifs.splice(+qd,1);persist('qualifs/list',{items:manual.qualifs});renderQualifs()}});
