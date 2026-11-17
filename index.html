@@ -94,6 +94,12 @@ a.btn{display:inline-block;text-decoration:none}
 iframe.social{display:block;width:100%;border:0;border-radius:10px;background:#f4f7fa}
 .adv{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#f7fbff}
 .adv table td,.adv table th{font-size:13px}
+body:not(.coach-mode) .coach{display:none!important}
+body.coach-mode .parent{display:none!important}
+.modebox{display:inline-flex;align-items:center;gap:6px;margin-left:auto}
+#modeForm{display:inline-flex;align-items:center;gap:6px}#modeForm.hide{display:none}
+#modeCode{padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.95);width:150px;font:inherit;font-size:13px}
+.brand{width:100%}
 #nav button[data-v=entrainement]{display:none}
 </style>
 </head>
@@ -104,14 +110,16 @@ iframe.social{display:block;width:100%;border:0;border-radius:10px;background:#f
     <div><h1>DOUAI NATATION 1897</h1><small id="sub">Performances FFN · extranat</small></div>
     <button id="refreshBtn" class="refresh noprint" type="button" title="Charger les derniers résultats publiés"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg><span>Rafraîchir les résultats</span></button>
     <span id="refreshMsg" class="refresh-msg noprint" role="status"></span>
+    <div class="modebox noprint"><button id="modeBtn" class="refresh" type="button"></button>
+      <form id="modeForm" class="hide" autocomplete="off"><input id="modeCode" type="password" placeholder="Code entraîneur" aria-label="Code entraîneur"><button class="refresh" type="submit">Valider</button><span id="modeMsg" class="refresh-msg"></span></form></div>
   </div>
   <nav id="nav">
-    <button data-v="club" class="on">Club &amp; points CNC</button>
+    <button data-v="club" class="on"><span class="coach">Club &amp; points CNC</span><span class="parent">Classements</span></button>
     <button data-v="nageurs">Nageurs &amp; fiches</button>
-    <button data-v="interclubs">Interclubs</button>
+    <button data-v="interclubs" class="coach">Interclubs</button>
     <button data-v="qualifs">Temps de qualif</button>
-    <button data-v="entrainement">Entraînement</button>
-    <button data-v="echeances">Échéances</button>
+    <button data-v="entrainement" class="coach">Entraînement</button>
+    <button data-v="echeances" class="coach">Échéances</button>
     <button data-v="reseaux">Réseaux</button>
   </nav>
 </header>
@@ -122,14 +130,14 @@ iframe.social{display:block;width:100%;border:0;border-radius:10px;background:#f
       <div class="card kpi"><div class="lab">Classement national</div><div class="num" id="kNat">–</div><div class="sub" id="kNatSub"></div></div>
       <div class="card kpi"><div class="lab">Classement régional</div><div class="num" id="kReg">–</div><div class="sub" id="kRegSub">Hauts-de-France</div></div>
       <div class="card kpi"><div class="lab">Classement départemental</div><div class="num" id="kDep">–</div><div class="sub" id="kDepSub">Nord</div></div>
-      <div class="card kpi"><div class="lab">Points CNC</div><div class="num" id="kPts">–</div><div class="sub" id="kPtsSub"></div></div>
+      <div class="card kpi coach"><div class="lab">Points CNC</div><div class="num" id="kPts">–</div><div class="sub" id="kPtsSub"></div></div>
     </div>
     <div class="club-layout" style="margin-top:14px"><div class="club-main">
     <div class="grid" style="grid-template-columns:1fr">
       <div class="card"><h2>Top 10 du club · saison en cours (meilleure perf en points FFN)</h2><div id="top10" style="overflow-x:auto"></div></div>
       <div class="card"><h2>Effectif par catégorie</h2><div id="effectif" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))"></div></div>
     </div>
-    <div class="card" style="margin-top:14px"><h2>D'où viennent les points « Compétiteurs »</h2><div id="chTiers"></div><p class="small muted">Somme des points CNC ramenés par palier (thème 3 « Les compétiteurs »).</p></div>
+    <div class="card coach" style="margin-top:14px"><h2>D'où viennent les points « Compétiteurs »</h2><div id="chTiers"></div><p class="small muted">Somme des points CNC ramenés par palier (thème 3 « Les compétiteurs »).</p></div>
     </div><aside class="club-side"><div class="card" id="newsCard"></div></aside></div>
   </section>
 
@@ -140,12 +148,12 @@ iframe.social{display:block;width:100%;border:0;border-radius:10px;background:#f
         <input id="fQ" placeholder="Rechercher un nageur…" style="min-width:200px">
         <select id="fSexe"><option value="">Filles et garçons</option><option value="F">Filles</option><option value="H">Garçons</option></select>
         <select id="fCat"></select>
-        <select id="fGrp"><option value="">Tous les groupes</option></select>
+        <select id="fGrp" class="coach"><option value="">Tous les groupes</option></select>
         <span class="muted small" id="fCount"></span>
       </div>
       <div class="scroll" style="max-height:420px"><table id="tNag"><thead><tr>
-        <th data-k="rang" class="r">Rang club</th><th data-k="nom">Nageur</th><th data-k="an">Année</th><th data-k="cat">Cat.</th><th data-k="sexe">Sexe</th><th data-k="grp">Groupe</th><th data-k="spe">Spés</th>
-        <th data-k="best" class="r">Meilleure perf saison</th><th data-k="cnc" class="r">Pts CNC</th><th data-k="last">Dernière course</th>
+        <th data-k="rang" class="r">Rang club</th><th data-k="nom">Nageur</th><th data-k="an">Année</th><th data-k="cat">Cat.</th><th data-k="sexe">Sexe</th><th data-k="grp" class="coach">Groupe</th><th data-k="spe" class="coach">Spés</th>
+        <th data-k="best" class="r">Meilleure perf saison</th><th data-k="cnc" class="r coach">Pts CNC</th><th data-k="last">Dernière course</th>
       </tr></thead><tbody></tbody></table></div>
     </div>
   </section>
@@ -158,7 +166,7 @@ iframe.social{display:block;width:100%;border:0;border-radius:10px;background:#f
   </section>
 
   <!-- CNC -->
-  <section id="v-cnc" class="hide" style="margin-top:14px">
+  <section id="v-cnc" class="hide coach" style="margin-top:14px">
     <div class="card"><h2>Barème « Les compétiteurs » du Classement National des Clubs</h2>
       <p class="muted">Chaque nageur rapporte au club les points de son meilleur palier : il faut au moins <b>2 performances sur 2 épreuves différentes</b> dans la tranche de points de la table de cotation FFN.</p>
       <div class="scroll"><table><thead><tr><th>Points club</th><th>Condition</th><th class="r">Nageurs</th><th class="r">Total</th></tr></thead><tbody id="tBareme"></tbody></table></div>
@@ -207,8 +215,7 @@ iframe.social{display:block;width:100%;border:0;border-radius:10px;background:#f
         <iframe class="social" data-src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D61559427819249&amp;tabs=timeline&amp;width=500&amp;height=620&amp;small_header=false&amp;adapt_container_width=true&amp;hide_cover=false&amp;show_facepile=false&amp;locale=fr_FR" title="Facebook de Douai Natation 1897" style="height:620px;max-width:500px"></iframe>
         <p style="margin-top:10px"><a class="btn" href="https://www.facebook.com/profile.php?id=61559427819249" target="_blank" rel="noopener">Ouvrir sur Facebook</a></p></div>
     </div>
-    <div class="card" style="margin-top:14px"><h2>Site du club</h2><p>Inscriptions, horaires et informations pratiques : <a href="https://douainatation1897.my.canva.site" target="_blank" rel="noopener">douainatation1897.my.canva.site</a></p>
-      <p class="small muted">Si les publications ne s'affichent pas (bloqueur de contenu, navigation privée), utilisez les boutons pour ouvrir Instagram ou Facebook.</p></div>
+    <p class="small muted" style="margin-top:10px">Si les publications ne s'affichent pas (bloqueur de contenu, navigation privée), utilisez les boutons pour ouvrir Instagram ou Facebook.</p>
   </section>
 
   <section id="v-echeances" class="hide">
@@ -243,7 +250,7 @@ iframe.social{display:block;width:100%;border:0;border-radius:10px;background:#f
       <button data-q="lvl" data-niv="National">National · France</button>
       <button data-q="pts">Table des points FFN</button>
       <button data-q="qualifies">Nageurs qualifiés</button>
-      <button data-q="engage">Préparer les engagements</button>
+      <button data-q="engage" class="coach">Préparer les engagements</button>
     </div>
     <div id="q-lvl"></div>
     <div id="q-pts" class="card hide"></div>
@@ -256,7 +263,7 @@ iframe.social{display:block;width:100%;border:0;border-radius:10px;background:#f
         <label class="small"><input type="checkbox" id="qClose"> Afficher aussi les « presque » (moins de 3 %)</label><span class="small muted" id="qInfo"></span></div>
       <div class="scroll" style="max-height:none"><table><thead><tr><th>Nageur</th><th>Cat.</th><th>Épreuves (temps réalisé / temps limite)</th></tr></thead><tbody id="qBody"></tbody></table></div>
     </div>
-    <details class="card" style="margin-top:14px"><summary class="small link">Ajouter un temps limite pour une autre compétition</summary>
+    <details class="card coach" style="margin-top:14px"><summary class="small link">Ajouter un temps limite pour une autre compétition</summary>
       <div class="filters" id="qForm" style="margin-top:10px">
         <input id="qComp" placeholder="Compétition (ex. Régionaux hiver)" style="min-width:200px">
         <select id="qEpr"></select>
@@ -387,8 +394,8 @@ function renderNageurs(){
   const val=s=>({rang:s.rang||9999,nom:s.nom,an:s.an,cat:CATS.indexOf(s.cat),sexe:s.sexe,grp:grpOf(s),spe:speOf(s),best:s.bestP?.pts||0,cnc:s.cnc26||0,last:s.last})[sortK];
   l.sort((a,b)=>{const x=val(a),y=val(b);return (x>y?1:x<y?-1:0)*sortD});
   $('#fCount').textContent=l.length+' nageurs';
-  $('#tNag tbody').innerHTML=l.map(s=>`<tr><td class="r">${s.rang||'–'}</td><td>${nageurLink(s)}</td><td>${s.an}</td><td title="${CATNAME[s.cat]} · ${s.acat}">${s.cat} <span class="small muted">${s.cat!=='Seniors'?CATNAME[s.cat]:''}</span></td><td><span class="pill ${s.sexe}">${s.sexe==='F'?'F':'G'}</span></td><td>${esc(grpOf(s))}</td><td class="small">${esc(speOf(s))}</td>
-   <td class="r">${s.bestP?`${evName(s.bestP.e)} ${s.bestP.b}m · <b>${s.bestP.pts}</b>`:''}</td><td class="r">${tierPill(s.cnc26)}</td><td>${fdate(s.last)}</td></tr>`).join('');
+  $('#tNag tbody').innerHTML=l.map(s=>`<tr><td class="r">${s.rang||'–'}</td><td>${nageurLink(s)}</td><td>${s.an}</td><td title="${CATNAME[s.cat]} · ${s.acat}">${s.cat} <span class="small muted">${s.cat!=='Seniors'?CATNAME[s.cat]:''}</span></td><td><span class="pill ${s.sexe}">${s.sexe==='F'?'F':'G'}</span></td><td class="coach">${esc(grpOf(s))}</td><td class="small coach">${esc(speOf(s))}</td>
+   <td class="r">${s.bestP?`${evName(s.bestP.e)} ${s.bestP.b}m · <b>${s.bestP.pts}</b>`:''}</td><td class="r coach">${tierPill(s.cnc26)}</td><td>${fdate(s.last)}</td></tr>`).join('');
 }
 function rankBlock(s){
   const r=RK[s.id];
@@ -411,12 +418,12 @@ function renderFiche(id){
   $('#fiche').innerHTML=`
   <div class="noprint" style="text-align:right;margin-bottom:6px"><button class="btn ghost" id="printBtn">Imprimer / enregistrer en PDF</button> <span id="printMsg" class="small muted"></span></div>
   <div class="card"><div class="hero"><div class="avatar">${esc(initials)}</div><div style="flex:1">
-    <h2>${esc(s.nom)}</h2><div class="chips"><span class="pill ${s.sexe}">${s.sexe==='F'?'Nageuse':'Nageur'}</span><span class="pill" title="Âge sportif FFN : âge atteint au cours de l'année ${META.refYear}">né(e) en ${s.an} · ${s.age} ans en ${META.refYear}</span><span class="pill">${s.cat}${s.cat!=='Seniors'?' · '+CATNAME[s.cat]:''}</span>${s.acat!==s.cat?`<span class="pill">${s.acat}</span>`:''}${grpOf(s)?`<span class="pill">Groupe ${esc(grpOf(s))}</span>`:''}<span class="pill">Spés : ${esc(speOf(s))}</span></div></div>
+    <h2>${esc(s.nom)}</h2><div class="chips"><span class="pill ${s.sexe}">${s.sexe==='F'?'Nageuse':'Nageur'}</span><span class="pill" title="Âge sportif FFN : âge atteint au cours de l'année ${META.refYear}">né(e) en ${s.an} · ${s.age} ans en ${META.refYear}</span><span class="pill">${s.cat}${s.cat!=='Seniors'?' · '+CATNAME[s.cat]:''}</span>${s.acat!==s.cat?`<span class="pill">${s.acat}</span>`:''}${grpOf(s)?`<span class="pill coach">Groupe ${esc(grpOf(s))}</span>`:''}<span class="pill coach">Spés : ${esc(speOf(s))}</span></div></div>
     <div class="kpi" style="text-align:right"><div class="lab">Rang au club</div><div class="num">${s.rang||'–'}<span class="small muted"> / ${META.nRanked}</span></div><div class="small muted">saison ${META.season}</div></div></div></div>
   <div class="grid two" style="margin-top:14px">
     <div class="card"><h3>3 meilleures performances · saison ${META.season}</h3><div class="top3">${(s.top3.length?s.top3:[]).map((p,i)=>`<div class="medal m${i+1}"><div class="small muted">${evName(p.e)} · ${p.b} m</div><div class="num">${p.pts} pts</div><div><b>${p.t}</b></div><div class="small muted">${fdate(p.d)} · ${esc(p.lieu)} <span class="lvl ${p.niv}">${p.niv}</span></div></div>`).join('')||'<p class="muted">Pas encore de course cette saison.</p>'}</div>
       ${s.top3c.length?`<p class="small muted" style="margin-top:10px">Meilleures perfs de carrière : ${s.top3c.map(p=>`${evName(p.e)} ${p.b}m <b>${p.t}</b> (${p.pts} pts, ${p.d.slice(0,4)})`).join(' · ')}</p>`:''}</div>
-    <div class="card"><h3>Points ramenés au club (CNC)</h3>
+    <div class="card coach"><h3>Points ramenés au club (CNC)</h3>
       <div class="rk"><div><div class="small muted">CNC extranat (provisoire)</div><b>${s.cnc26||0} pts</b></div><div><div class="small muted">Estimation saison ${META.season}</div><b>${s.tier.v} pts</b></div></div>
       ${s.tier.used?.length&&s.tier.v>5?`<p class="small">Grâce à : ${s.tier.used.map(p=>`${evName(p.e)} ${p.b}m <b>${p.t}</b> (${p.pts} pts)`).join(' et ')}</p>`:''}
       ${adviceHTML(s)}
@@ -430,18 +437,18 @@ function renderFiche(id){
     <div class="card kpi"><div class="lab">Dernière compétition</div><div class="num" style="font-size:26px">${fdate(s.last)||'–'}</div><div class="sub">${s.perfs.length?esc(s.perfs[s.perfs.length-1].lieu):''}</div></div>
   </div>
   <div class="card" style="margin-top:14px"><h3>Classements ${META.rkSeason}</h3>${rankBlock(s)}</div>
-  ${g2Fiche(s)}
+  ${COACH?g2Fiche(s):''}
   <div class="card" style="margin-top:14px"><h3>Meilleurs temps par épreuve</h3><div class="scroll" style="max-height:420px"><table><thead><tr><th>Épreuve</th><th>Bassin</th><th class="r">Record perso</th><th class="r">Pts</th><th>Date</th><th class="r">Meilleur ${META.season}</th><th class="r">Meilleur ${META.season-1}</th><th class="r">Progression</th><th class="r">Courses</th></tr></thead><tbody>
   ${events.map(k=>{const [e,b]=k.split('|');const ps=s.perfs.filter(p=>p.e===e&&p.b==b);const mp=s.best[k];const bs=y=>{const l=ps.filter(p=>seasonOf(p.d)===y);return l.length?l.reduce((a,c)=>c.s<a.s?c:a):null};const a=bs(META.season),z=bs(META.season-1);const pr=a&&z?((z.s-a.s)/z.s*100):null;
     return `<tr><td><b>${evName(e)}</b></td><td>${b} m</td><td class="r"><b>${mp.t}</b></td><td class="r">${mp.pts}</td><td class="small">${fdate(mp.d)}</td><td class="r">${a?a.t:'–'}</td><td class="r">${z?z.t:'–'}</td><td class="r">${pr===null?'–':`<span style="color:${pr>=0?'var(--green)':'var(--red)'};font-weight:600">${pr>=0?'▲':'▼'} ${Math.abs(pr).toFixed(1)} %</span>`}</td><td class="r">${ps.length}</td></tr>`}).join('')}
   </tbody></table></div></div>
   <div class="card" style="margin-top:14px"><h3>Courbe de progression</h3>
     <div class="filters"><select id="pEv">${events.map(e=>{const [a,b]=e.split('|');return `<option value="${e}" ${e===defEv?'selected':''}>${evName(a)} · ${b} m</option>`}).join('')}</select>
-    <span class="muted small">Plus la courbe monte, plus le temps est rapide. Les points orange sont les temps d'entraînement.</span></div>
+    <span class="muted small">Plus la courbe monte, plus le temps est rapide.<span class="coach"> Les points orange sont les temps d'entraînement.</span></span></div>
     <div id="chP"></div>
   </div>
   <div class="grid two" style="margin-top:14px">
-    <div class="card"><h3>Infos coach</h3>
+    <div class="card coach"><h3>Infos coach</h3>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
         <label class="small">Groupe<br><input id="mGrp" value="${esc(f.groupe||'')}" list="grpList" style="width:100%"></label>
         <label class="small">Spécialités<br><input id="mSpe" value="${esc(f.spes||'')}" placeholder="${esc(s.speAuto.join(', '))}" style="width:100%"></label>
@@ -464,7 +471,7 @@ function renderFiche(id){
   const drawTrain=()=>{$('#tList').innerHTML=trains.length?trains.map((t,i)=>`${fdate(t.d)} · ${evName(t.e)} ${t.b}m · <b>${esc(t.t)}</b> <span class="link" data-del="${i}">✕</span>`).join('<br>'):'<span class="muted">Aucun temps d’entraînement.</span>'};
   drawTrain();
   const drawChart=()=>{const [e,b]=$('#pEv').value.split('|');const ps=s.perfs.filter(p=>p.e===e&&p.b==b);const tr=trains.filter(t=>t.e===e&&t.b==b);
-    lineSVG($('#chP'),ps.map(p=>({x:new Date(p.d).getTime(),y:p.s,tip:`${fdate(p.d)} · ${p.t} · ${p.pts} pts · ${p.lieu}`})),tr.map(t=>({x:new Date(t.d).getTime(),y:tsec(t.t),tip:`${fdate(t.d)} · ${t.t} (entraînement)`})));};
+    lineSVG($('#chP'),ps.map(p=>({x:new Date(p.d).getTime(),y:p.s,tip:`${fdate(p.d)} · ${p.t} · ${p.pts} pts · ${p.lieu}`})),(COACH?tr:[]).map(t=>({x:new Date(t.d).getTime(),y:tsec(t.t),tip:`${fdate(t.d)} · ${t.t} (entraînement)`})));};
   drawChart(); $('#pEv').onchange=drawChart;
   $('#tList').onclick=e=>{const i=e.target.dataset.del;if(i!==undefined){trains.splice(+i,1);drawTrain();drawChart();}};
   $('#tAdd').onclick=()=>{const d=$('#tDate').value,t=$('#tT').value.trim();if(!d||!isFinite(tsec(t))){$('#mMsg').textContent='Date et temps (mm:ss.cc) requis';return}
@@ -813,6 +820,7 @@ let VIEW='club', FICHE=null;
 function rerender(){ if(VIEW==='nageurs'){renderNageurs();} else if(VIEW==='qualifs')renderQualifs(); else if(VIEW==='club')renderCNC(); }
 const GROUPS={club:['club','cnc','records'],nageurs:['nageurs','fiche'],interclubs:['interclubs'],qualifs:['qualifs'],entrainement:['entrainement'],echeances:['echeances'],reseaux:['reseaux']};
 function show(v,id){ if(v==='fiche'||v==='cnc'||v==='records'){ return show(v==='fiche'?'nageurs':'club',id); }
+  if(!COACH&&COACH_VIEWS.includes(v)) v='club';
   VIEW=v;$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));const vis=GROUPS[v];$$('main>section').forEach(s=>s.classList.toggle('hide',!vis.includes(s.id.slice(2))));
   if(v==='club'){renderNews();renderClub();renderCNC();renderRecords()}if(v==='entrainement'){renderGroup();renderPlan()}if(v==='echeances'){renderEch()}if(v==='reseaux'){$$('iframe.social').forEach(f=>{if(!f.src)f.src=f.dataset.src})}
   if(v==='nageurs'){renderNageurs();FICHE=id||FICHE||SW.filter(s=>s.rang).sort((a,b)=>a.rang-b.rang)[0].id;renderFiche(FICHE);}
@@ -820,6 +828,21 @@ function show(v,id){ if(v==='fiche'||v==='cnc'||v==='records'){ return show(v===
   try{history.replaceState(null,'','#'+v)}catch(e){}
   if(id&&v==='nageurs'){$('#v-fiche').scrollIntoView({behavior:'smooth'})}else window.scrollTo(0,0);}
 
+// ---------- mode nageur/parent ou entraîneur ----------
+let COACH=false; const COACH_VIEWS=['interclubs','entrainement','echeances'];
+const h32=s=>{let x=2166136261;for(const c of s){x^=c.charCodeAt(0);x=Math.imul(x,16777619)}return (x>>>0).toString(16)};
+function setMode(c,keep){COACH=c;document.body.classList.toggle('coach-mode',c);
+  $('#modeBtn').innerHTML=c?'<span>Mode entraîneur ✓ · quitter</span>':'<span>Mode nageur / parent · passer en entraîneur</span>';
+  $('#modeBtn').title=c?'Revenir au mode nageur / parent':'Accès entraîneur (code demandé)';
+  if(!keep){try{c?localStorage.setItem('dn_mode','coach'):localStorage.removeItem('dn_mode')}catch(e){}}
+  if(!c){const eg=document.querySelector('#v-qualifs .subtabs button[data-q=engage].on');if(eg)document.querySelector('#v-qualifs .subtabs button').click()}
+  if(!keep&&DATA){if(!c&&COACH_VIEWS.includes(VIEW))show('club');else show(VIEW||'club',VIEW==='nageurs'?FICHE:undefined)}}
+function initMode(){let c=false;try{c=localStorage.getItem('dn_mode')==='coach'}catch(e){}
+  setMode(c,true);
+  $('#modeBtn').onclick=()=>{if(COACH){setMode(false);return}$('#modeForm').classList.toggle('hide');$('#modeCode').focus()};
+  $('#modeForm').onsubmit=e=>{e.preventDefault();const v=$('#modeCode').value.trim().toUpperCase();
+    if(h32(v)==='fd9d4da6'){$('#modeCode').value='';$('#modeMsg').textContent='';$('#modeForm').classList.add('hide');setMode(true)}
+    else{$('#modeMsg').textContent='Code incorrect';$('#modeCode').select()}};}
 async function refreshData(){
   const b=$('#refreshBtn'), m=$('#refreshMsg'); b.disabled=true; b.classList.add('spin'); m.textContent='Recherche des derniers résultats…';
   try{
@@ -852,8 +875,8 @@ async function boot(){
   $('#qEpr').innerHTML=EVORDER.map(e=>`<option value="${e}">${evName(e)}</option>`).join('');
   $('#fSel').innerHTML=[...SW].sort((a,b)=>a.nom.localeCompare(b.nom)).map(s=>`<option value="${s.id}">${esc(s.nom)} (${s.an})</option>`).join('');
   fillGroups();
-  $('#refreshBtn').onclick=refreshData;
-  $('#nav').onclick=e=>{const v=e.target.dataset.v;if(v)show(v)};
+  $('#refreshBtn').onclick=refreshData; initMode();
+  $('#nav').onclick=e=>{const b=e.target.closest('button');const v=b&&b.dataset.v;if(v)show(v)};
   document.body.addEventListener('click',e=>{const id=e.target.dataset?.open;if(id){show('nageurs',id)}
     const qd=e.target.dataset?.qdel;if(qd!==undefined){manual.qualifs.splice(+qd,1);persist('qualifs/list',{items:manual.qualifs});renderQualifs()}});
   ['#fQ','#fSexe','#fCat','#fGrp'].forEach(s=>$(s).addEventListener('input',renderNageurs));
@@ -874,7 +897,7 @@ async function boot(){
   $('#eAdd').onclick=()=>{const e={d:$('#eDate').value,f:$('#eFin').value||null,nom:$('#eNom').value.trim(),lieu:$('#eLieu').value.trim(),niv:$('#eNiv').value,qui:$('#eQui').value.trim()};
     if(!e.d||!e.nom){$('#eMsg').textContent='Date et nom requis';return} echs.push(e); persist('echeances/list',{items:echs}).then(ok=>$('#eMsg').textContent=ok?'Enregistré ✓':'Enregistré sur cet appareil'); renderEch();};
   $('#eList').addEventListener('click',e=>{const i=e.target.dataset.edel;if(i!==undefined){echs.splice(+i,1);persist('echeances/list',{items:echs});renderEch()}});
-  const h=(location.hash||'').slice(1); show(['club','nageurs','interclubs','qualifs','entrainement','echeances'].includes(h)?h:'club');
+  const h=(location.hash||'').slice(1); show(['club','nageurs','interclubs','qualifs','entrainement','echeances','reseaux'].includes(h)?h:'club');
   initDB();
 }
 boot().catch(e=>{document.querySelector('main').innerHTML='<div class="card">Impossible de charger les données : '+esc(e.message)+'</div>'});
