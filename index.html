@@ -979,7 +979,7 @@ async function refreshData(){
 async function boot(){
   const j=JSON.parse(document.getElementById('data').textContent); DATA=j.swimmers; META=j.meta; RK=j.rankings||{};
   prep();
-  $('#sub').textContent=`${SW.length} nageurs · données extranat du ${META.updated}`;
+  $('#sub').textContent=`Résultats extranat du ${META.updated}`;
   $('#foot').innerHTML=`Source : ffn.extranat.fr (pages publiques), extraction du ${META.updated}. Seules les performances réalisées sous les couleurs de Douai Natation 1897 sont prises en compte. Saison FFN ${META.season} = année civile. Catégories selon l'âge atteint en ${META.refYear} : U11 Avenirs (11 ans et moins), U13 Benjamins (12-13), U15 Minimes (14-15), U18 Juniors (16-18), Seniors (19+). Classements individuels = rankings FFN ${META.rkSeason} (extranat n'affiche que le top 100 des listes nationales toutes catégories, régionales et départementales ; les listes nationales par catégorie d'âge sont complètes). Points CNC « estimés » = calcul à partir des temps, à confirmer sur extranat.`;
   const catOpts='<option value="">Toutes catégories</option>'+CATS.map(c=>`<option>${c}</option>`).join('');
   $('#fCat').innerHTML=catOpts; $('#rCat').innerHTML=catOpts;
