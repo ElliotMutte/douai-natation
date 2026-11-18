@@ -243,6 +243,7 @@ ul.tight{margin:6px 0 8px;padding-left:18px}ul.tight li{margin:4px 0}
         <p class="small muted">D'après le règlement sportif 2025 de la Ligue Hauts-de-France. Les épreuves étant tirées au sort, un Avenir complet sur les 4 nages a plus de chances d'être retenu.</p></div>
       <div class="card"><h2>Les autres rendez-vous des Avenirs</h2>
         <ul class="tight">
+          <li><b>Découv'Nat · dimanche 6 décembre 2026</b> (lieu à confirmer) : journée du comité du Nord pour les Avenirs. Programme simple pour apprendre les 4 nages et travailler l'endurance ; c'est l'occasion de nager les épreuves manquantes du tableau ci-dessus.</li>
           <li><b>Interclubs Avenirs</b> : équipes de 4 du club (un 50 de chaque nage + 100 4N, relais 4 × 50 NL et 4 × 50 4N).</li>
           <li><b>Championnat régional</b> : les 5 meilleurs Avenirs de chaque département sont qualifiés pour nager le championnat régional avec les Benjamins.</li>
           <li><b>Repère points</b> : chaque palier de 100 points FFN gagné est un vrai progrès ; la fiche de chaque nageur indique le temps à faire pour le prochain palier.</li>
@@ -428,10 +429,18 @@ const AV_EV=['50 NL','50 Dos','50 Brasse','50 Pap','100 4N'];let AVSX='F';
 function renderAvenirs(){
   const A=SW.filter(s=>s.age<=11&&s.sexe===AVSX).map(s=>{const b=AV_EV.map(e=>qBest(s,e,'25','saison')||qBest(s,e,'25','mpp'));const pts=b.map(p=>p?p.pts:0);
     const opt=[['50 crawl-dos',(pts[0]+pts[1])/2],['50 papillon-brasse',(pts[2]+pts[3])/2],['100 4 nages',pts[4]]].sort((x,y)=>y[1]-x[1])[0];
-    return {s,b,tot:pts.reduce((x,y)=>x+y,0),n:pts.filter(x=>x).length,opt:opt[1]>0?opt[0]:'–'}}).sort((a,b)=>b.tot-a.tot||b.n-a.n);
-  $('#avList').innerHTML=A.length?`<div class="scroll" style="max-height:none"><table><thead><tr><th class="r">#</th><th>Nageur</th><th>Né(e)</th>${AV_EV.map(e=>`<th class="r">${evName(e)}</th>`).join('')}<th class="r">Total pts</th><th>Point fort (Coupe 263)</th></tr></thead><tbody>
-    ${A.map((r,i)=>`<tr class="${i<8&&r.tot>0?'sel':''}"><td class="r">${i+1}</td><td>${nageurLink(r.s)}</td><td>${r.s.an}</td>${r.b.map(p=>`<td class="r">${p?`<b>${shortT(p.t)}</b><div class="small muted">${p.pts} pts</div>`:'<span class="muted">–</span>'}</td>`).join('')}<td class="r"><b>${r.tot}</b><div class="small muted">${r.n}/5 épreuves</div></td><td class="small">${r.opt}</td></tr>`).join('')}</tbody></table></div>
-    <p class="small muted" style="margin-top:6px">Fond vert : les 8 meilleurs totaux du club (une équipe départementale compte 8 ${AVSX==='F'?'filles':'garçons'}). Meilleurs temps de la saison ${META.season}, sinon meilleur temps en carrière au club. La sélection officielle est faite par le comité du Nord parmi tous les clubs.</p>`:'<p class="muted">Aucun Avenir dans cette catégorie.</p>';}
+    const sw=pts.filter(x=>x),avg=sw.length?Math.round(sw.reduce((x,y)=>x+y,0)/sw.length):0;
+    const miss=AV_EV.filter((e,i)=>!b[i]);
+    const rec=[];miss.forEach(e=>rec.push({e,miss:true,gain:avg}));
+    AV_EV.forEach((e,i)=>{const p=b[i];if(!p||avg-p.pts<40)return;const tgt=ptsTime(e,s.sexe,avg);if(tgt&&tgt<p.s)rec.push({e,p,target:avg,tgt,gain:avg-p.pts})});
+    rec.sort((x,y)=>(y.miss-x.miss)||y.gain-x.gain);
+    return {s,b,tot:pts.reduce((x,y)=>x+y,0),n:sw.length,avg,miss,rec:rec.slice(0,3),est:pts.reduce((x,y)=>x+y,0)+miss.length*avg,opt:opt[1]>0?opt[0]:'–'}}).sort((a,b)=>b.tot-a.tot||b.n-a.n);
+  $('#avList').innerHTML=A.length?`<div class="scroll" style="max-height:none"><table><thead><tr><th class="r">#</th><th>Nageur</th><th>Né(e)</th>${AV_EV.map(e=>`<th class="r">${evName(e)}</th>`).join('')}<th class="r">Total pts</th><th>Nages conseillées pour gagner des points</th></tr></thead><tbody>
+    ${A.map((r,i)=>`<tr class="${i<8&&r.tot>0?'sel':''}"><td class="r">${i+1}</td><td>${nageurLink(r.s)}</td><td>${r.s.an}</td>${r.b.map(p=>`<td class="r">${p?`<b>${shortT(p.t)}</b><div class="small muted">${p.pts} pts</div>`:'<span class="muted">–</span>'}</td>`).join('')}<td class="r"><b>${r.tot}</b><div class="small muted">${r.n}/5 épreuves</div>${r.miss.length&&r.avg?`<div class="small" style="color:#b34700">≈ ${r.est} si complet</div>`:''}</td>
+      <td class="small" style="white-space:normal;min-width:260px">${r.miss.length?`<div><b style="color:#b34700">Manque${r.miss.length>1?'nt':''} pour le total :</b> ${r.miss.map(e=>evName(e)).join(', ')}</div>`:'<div class="better">Total complet (5/5)</div>'}
+        ${r.rec.length?`<ol style="margin:4px 0 0;padding-left:18px">${r.rec.map(x=>x.miss?`<li>Nager le <b>${evName(x.e)}</b>${x.gain?` : environ <b>+${x.gain} pts</b> au total`:''}</li>`:`<li>Travailler le <b>${evName(x.e)}</b> : ${shortT(x.p.t)} → <b>${shortT(fmt(x.tgt))}</b> pour ${x.target} pts (<b>+${x.gain} pts</b>)</li>`).join('')}</ol>`:''}
+        ${r.opt!=='–'?`<div class="muted" style="margin-top:3px">Point fort Coupe 263 : ${r.opt}</div>`:''}</td></tr>`).join('')}</tbody></table></div>
+    <p class="small muted" style="margin-top:6px">Conseils : d'abord nager les épreuves manquantes (chacune rapporte environ la moyenne de points du nageur), puis rapprocher l'épreuve la plus faible de sa moyenne. Temps visés estimés avec le barème FFN. Fond vert : les 8 meilleurs totaux du club (une équipe départementale compte 8 ${AVSX==='F'?'filles':'garçons'}). Meilleurs temps de la saison ${META.season}, sinon meilleur temps en carrière au club. La sélection officielle est faite par le comité du Nord parmi tous les clubs.</p>`:'<p class="muted">Aucun Avenir dans cette catégorie.</p>';}
 function prep(){
   const yr=META.refYear;
   SW=DATA.map(s=>{
@@ -754,7 +763,8 @@ function ffnEvents(){return [
   {d:'2026-12-08',f:'2026-12-12',nom:'Championnats de France U18 25 m',niv:'National',src:'Calendrier FFN'},
   {d:'2026-12-20',nom:'Date limite des Interclubs U11 (organisés par le département)',niv:'Interclubs',src:'Annuel règlement FFN 2026'},
   {d:'2026-12-20',nom:'Date limite des Trophées U11',niv:'Départemental',src:'Annuel règlement FFN 2026'},
-  {d:'2026-11-22',nom:'Date limite des Trophées U13',niv:'Départemental',src:'Annuel règlement FFN 2026'}]}
+  {d:'2026-11-22',nom:'Date limite des Trophées U13',niv:'Départemental',src:'Annuel règlement FFN 2026'},
+  {d:'2026-12-06',nom:"Découv'Nat · journée Avenirs (comité du Nord)",niv:'Départemental',lieu:'lieu à confirmer',qui:'Avenirs',src:'Indiqué par le coach'}]}
 function clubEvents(){const P=META.g2?.planif;if(!P)return [];return P.echeances.map(e=>{const m=e.match(/(\d{1,2})\s*([a-zéû]+)?\s*(?:-\s*(\d{1,2})\s*([a-zéû]+))?\s*:\s*(.*)/i);
   if(!m) return {d:null,nom:e.trim(),niv:'Club',src:'Fiche Groupe 2',qui:'Groupe 2'};
   const mo1=MOIS[(m[2]||m[4]||'').toLowerCase()],mo2=MOIS[(m[4]||m[2]||'').toLowerCase()];const y=mo1>=9?2026:2027;
