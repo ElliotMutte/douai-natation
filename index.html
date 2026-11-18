@@ -403,18 +403,20 @@ function goalsCard(s){
   const L=Object.values(by).filter(x=>x.p.pts>0).map(x=>{const pts=x.p.pts,goal=Math.floor(pts/100)*100+100;const c=ptsTime(x.p.e,s.sexe,pts),a=ptsTime(x.p.e,s.sexe,goal);
     const tgt=a&&c?x.p.s*a/c:null;const cap=[300,600,900,1200,1500].find(v=>v>goal);const ac=cap&&c?ptsTime(x.p.e,s.sexe,cap):null;
     return {...x,pts,goal,tgt,gain:tgt?x.p.s-tgt:null,cap,capT:ac?x.p.s*ac/c:null}}).filter(x=>x.tgt);
-  if(!L.length)return '';
   L.sort((a,b)=>(b.cur-a.cur)||b.pts-a.pts);const top=L.slice(0,4);
   const main=[...top].sort((a,b)=>a.gain/a.p.s-b.gain/b.p.s)[0];
-  return `<div class="card goals" style="margin-top:14px"><h3 style="margin-bottom:0">Objectifs de points FFN</h3>
-   <div class="goal-main">Objectif prioritaire : <b>passer à ${main.goal} points</b> sur le <b>${evName(main.p.e)} (${main.p.b} m)</b>, en nageant en <b>${shortT(fmt(main.tgt))}</b>, soit <b>${fr2(main.gain)} s</b> plus vite que son meilleur temps.</div>
+  const cncPane=`<div class="small" style="margin:6px 0 4px">Points rapportés au club cette saison (classement des clubs) : <b>${s.tier.v} pts</b>${s.tier.used?.length&&s.tier.v>5?' grâce à '+s.tier.used.map(p=>`${evName(p.e)} ${p.b} m <b>${shortT(p.t)}</b>`).join(' et '):''}.</div>${adviceHTML(s)}`;
+  const persoPane=!L.length?'<p class="muted small">Pas encore de performance pour calculer des objectifs.</p>':`<div class="goal-main">Objectif prioritaire : <b>passer à ${main.goal} points</b> sur le <b>${evName(main.p.e)} (${main.p.b} m)</b>, en nageant en <b>${shortT(fmt(main.tgt))}</b>, soit <b>${fr2(main.gain)} s</b> plus vite que son meilleur temps.</div>
    <div class="goal-grid">${top.map(x=>`<div class="goal"><div class="ev">${evName(x.p.e)} · ${x.p.b} m</div>
      <div class="pts">${x.pts} <small>pts → objectif ${x.goal}</small></div>
      <div class="bar"><i style="width:${Math.max(4,x.pts%100)}%"></i></div>
      <div class="small">Meilleur temps <b>${shortT(x.p.t)}</b>${x.cur?'':` <span class="muted">(avant ${META.season})</span>`}</div>
      <div class="small">Pour ${x.goal} pts : <b>${shortT(fmt(x.tgt))}</b> <span class="gap near">−${fr2(x.gain)} s</span></div>
      ${x.capT?`<div class="small muted" style="margin-top:3px">Cap des ${x.cap} pts : ${shortT(fmt(x.capT))} (−${fr2(x.p.s-x.capT)} s)</div>`:''}</div>`).join('')}</div>
-   <p class="small muted" style="margin-top:8px">Les points FFN mesurent la valeur d'une performance (barème fédéral). Temps visés estimés à partir de ce barème, sur les meilleures épreuves de la saison.</p></div>`;}
+   <p class="small muted" style="margin-top:8px">Les points FFN mesurent la valeur d'une performance (barème fédéral). Temps visés estimés à partir de ce barème, sur les meilleures épreuves de la saison.</p>`;
+  return `<div class="card goals" style="margin-top:14px"><h3 style="margin-bottom:8px">Objectifs de points FFN</h3>
+   <div class="subtabs" id="goalTabs"><button data-gt="cnc" class="on">Objectifs de points CNC</button><button data-gt="perso">Objectifs persos</button></div>
+   <div data-gp="cnc">${cncPane}</div><div data-gp="perso" class="hide">${persoPane}</div></div>`;}
 // ---------- qualifications sur la fiche ----------
 function qualCard(s,quals){
   const Lq=quals.map(q=>{const b=q.b||q.bc;const lim=tsec(q.tps);return {...q,best:b,old:!q.b,g:b.s-lim,lim}}).sort((a,b)=>((a.g<=0)===(b.g<=0)?0:a.g<=0?-1:1)||(a.g<=0?NIVS.indexOf(b.niv)-NIVS.indexOf(a.niv):a.g/a.lim-b.g/b.lim));
@@ -541,7 +543,6 @@ function renderFiche(id){
     <div class="card coach"><h3>Points ramenés au club (CNC)</h3>
       <div class="rk"><div><div class="small muted">CNC extranat (provisoire)</div><b>${s.cnc26||0} pts</b></div><div><div class="small muted">Estimation saison ${META.season}</div><b>${s.tier.v} pts</b></div></div>
       ${s.tier.used?.length&&s.tier.v>5?`<p class="small">Grâce à : ${s.tier.used.map(p=>`${evName(p.e)} ${p.b}m <b>${p.t}</b> (${p.pts} pts)`).join(' et ')}</p>`:''}
-      ${adviceHTML(s)}
     </div>
   </div>
   <div class="grid k4" style="margin-top:14px">
@@ -579,6 +580,7 @@ function renderFiche(id){
   <div class="card" style="margin-top:14px"><h3>Toutes les performances</h3><div class="scroll" style="max-height:420px"><table><thead><tr><th>Date</th><th>Épreuve</th><th>Bassin</th><th class="r">Temps</th><th class="r">Points</th><th>Niveau</th><th>Lieu</th><th>Club</th></tr></thead><tbody>
   ${[...s.perfs].reverse().map(p=>`<tr><td>${fdate(p.d)}</td><td>${evName(p.e)}</td><td>${p.b} m</td><td class="r"><b>${p.t}</b>${s.best[p.e+'|'+p.b]===p?' <span class="pill t120">MPP</span>':''}</td><td class="r">${p.pts}</td><td><span class="lvl ${p.niv}">${p.niv}</span></td><td>${esc(p.lieu)}</td><td class="small muted">${esc(p.club||'Douai Natation 1897')}</td></tr>`).join('')}
   </tbody></table></div></div>`;
+  $$('#goalTabs button').forEach(b=>b.onclick=()=>{$$('#goalTabs button').forEach(x=>x.classList.toggle('on',x===b));$$('#fiche [data-gp]').forEach(d=>d.classList.toggle('hide',d.dataset.gp!==b.dataset.gt))});
   $('#printBtn').onclick=()=>{try{document.body.classList.add('print-fiche');window.print();setTimeout(()=>document.body.classList.remove('print-fiche'),500)}catch(e){$('#printMsg').textContent="L'impression n'est pas disponible ici : utilise le site public ou la copie autonome."}};
   let trains=[...(f.train||[])];
   const drawTrain=()=>{$('#tList').innerHTML=trains.length?trains.map((t,i)=>`${fdate(t.d)} · ${evName(t.e)} ${t.b}m · <b>${esc(t.t)}</b> <span class="link" data-del="${i}">✕</span>`).join('<br>'):'<span class="muted">Aucun temps d’entraînement.</span>'};
