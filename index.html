@@ -119,6 +119,11 @@ ul.tight{margin:6px 0 8px;padding-left:18px}ul.tight li{margin:4px 0}
 .bar{height:10px;border-radius:99px;background:#e6edf3;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,#0aa3a3,#1565c0);border-radius:99px}
 .qrow td{vertical-align:middle}
 .sel{background:#f3fbf4}
+.goal-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.goal-col{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.goal-col h4{margin:0 0 6px;font-size:15px;color:var(--navy);display:inline-block;background:#e7f6f6;border-radius:99px;padding:4px 12px}
+.goal-col .goal-main{font-size:14px}
+@media(max-width:900px){.goal-cols{grid-template-columns:1fr}}
 #nav button[data-v=entrainement]{display:none}
 </style>
 </head>
@@ -379,19 +384,20 @@ function advise(s,tt){const nt=tt?{t:tt}:nextTier(s.tier.v,s.cur);if(!nt)return 
   const by={};for(const p of s.perfs){if(t.b!==null&&p.b!==t.b)continue;const cur=seasonOf(p.d)===META.season;const o=by[p.e];
     if(!o||(cur&&!o.cur)||(cur===o.cur&&p.pts>o.p.pts))by[p.e]={p,cur};}
   const rows=Object.values(by).map(({p,cur})=>{const ok=cur&&p.pts>=t.lo;let tgt=null,gain=null;
-    if(!ok&&t.lo>0){const a=ptsTime(p.e,s.sexe,t.lo),c=ptsTime(p.e,s.sexe,Math.max(p.pts,1));if(a&&c){tgt=Math.min(p.s,p.s*a/c);gain=p.s-tgt}}
+    if(!ok&&t.lo>0){const a=ptsTime(p.e,s.sexe,t.lo),c=ptsTime(p.e,s.sexe,Math.max(p.pts,1));if(a&&c){tgt=p.s*a/c;gain=p.s-tgt}}
     if(!ok&&t.lo===0){tgt=p.s;gain=0}
-    return {p,cur,ok,tgt,gain,pct:ok?-1:gain!==null?gain/p.s:9}}).sort((a,b)=>a.pct-b.pct||b.p.pts-a.p.pts);
+    return {p,cur,ok,tgt,gain,pct:ok?-1:gain!==null?Math.max(gain,0)/p.s:9}}).sort((a,b)=>a.pct-b.pct||b.p.pts-a.p.pts);
   return {t,rows:rows.slice(0,2),nb:rows.length};}
 function adviceHTML(s,tt,alt){const a=advise(s,tt);if(!a)return '<p class="small muted">Palier maximal atteint.</p>';const {t,rows}=a;
   const alt25=!alt&&t.b===50&&a.nb<2?TIERS.filter(x=>x.b===25&&x.v>s.tier.v).sort((x,y)=>x.v-y.v)[0]:null;
   const need=2-rows.filter(r=>r.ok).length;
   return `<div class="adv"><b>${alt?'Ou en bassin de 25 m : ':''}Pour passer à ${t.v} pts</b> <span class="small muted">(${t.lab})</span><div class="small" style="margin:4px 0 6px">Les 2 perfs à privilégier${need===0?' : déjà réunies, à confirmer sur extranat.':need===1&&rows.some(r=>r.ok)?' : une est déjà acquise, il en reste une.':' :'}</div>
    ${rows.length?`<div style="overflow-x:auto"><table><thead><tr><th>Épreuve</th><th class="r">Meilleur temps</th><th class="r">Temps visé</th><th class="r">À gagner</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${evName(r.p.e)}</b> <span class="small muted">${t.b?t.b+' m':r.p.b+' m'}</span></td>
-     <td class="r">${r.p.t.replace(/^00:/,'')} <span class="small muted">${r.p.pts} pts${r.cur?'':' · avant '+META.season}</span></td>
-     <td class="r">${r.ok?'<span class="better">✓ acquis</span>':r.tgt!==null?(r.gain>0?'<b>'+fmt(r.tgt).replace(/^00:/,'')+'</b>':'<b>la nager cette saison</b>'):'<span class="small muted">–</span>'}</td>
-     <td class="r">${r.ok?'':r.gain>0?`<span style="color:#e65100">−${r.gain.toFixed(2)} s</span> <span class="small muted">(${(r.pct*100).toFixed(1)} %)</span>`:''}</td></tr>`).join('')}</tbody></table></div>`:''}
+     <td class="r">${shortT(r.p.t)} <span class="small muted">${r.p.pts} pts${r.cur?'':' · en '+r.p.d.slice(0,4)}</span></td>
+     <td class="r">${r.ok?`<span class="better">✓ ${shortT(r.p.t)}</span>`:r.tgt!==null?'<b>'+shortT(fmt(r.tgt))+'</b>':'<span class="small muted">–</span>'}</td>
+     <td class="r">${r.ok?'<span class="gap ok">acquis</span>':r.gain===null?'':r.gain>0?`<span class="gap near">−${fr2(r.gain)} s</span>`:`<span class="gap ok" title="Temps déjà réalisé avant ${META.season} : à refaire cette saison pour qu'il compte">déjà fait en ${r.p.d.slice(0,4)}</span>`}</td></tr>`).join('')}</tbody></table></div>`:''}
    ${a.nb<2?`<p class="small" style="margin-top:6px">Il faut 2 épreuves différentes${t.b?' en bassin de '+t.b+' m':''} : ${a.nb?'nager une deuxième épreuve (de préférence dans sa spécialité).':'aucune perf dans ce bassin pour l’instant, il faut s’engager en compétition en grand bassin.'}</p>`:''}
+   ${rows.some(r=>!r.ok&&r.gain!==null&&r.gain<=0)?`<p class="small" style="margin-top:6px">« Déjà fait » : ce temps a été réalisé lors d'une saison précédente. Il faut le refaire en ${META.season}${t.b?' en bassin de '+t.b+' m':''} pour que les points comptent.</p>`:''}
    ${alt25?'':`<p class="small muted" style="margin-top:6px">Temps visés estimés à partir du barème FFN ; épreuves classées de la plus accessible à la moins accessible.</p>`}</div>${alt25?adviceHTML(s,alt25,true):''}`;}
 const shortT=t=>String(t||'').replace(/^00:/,'').replace(/^0(\d:)/,'$1');
 const fr2=x=>Math.abs(x).toFixed(2).replace('.',',');
@@ -415,8 +421,7 @@ function goalsCard(s){
      ${x.capT?`<div class="small muted" style="margin-top:3px">Cap des ${x.cap} pts : ${shortT(fmt(x.capT))} (−${fr2(x.p.s-x.capT)} s)</div>`:''}</div>`).join('')}</div>
    <p class="small muted" style="margin-top:8px">Les points FFN mesurent la valeur d'une performance (barème fédéral). Temps visés estimés à partir de ce barème, sur les meilleures épreuves de la saison.</p>`;
   return `<div class="card goals" style="margin-top:14px"><h3 style="margin-bottom:8px">Objectifs de points FFN</h3>
-   <div class="subtabs" id="goalTabs"><button data-gt="cnc" class="on">Objectifs de points CNC</button><button data-gt="perso">Objectifs persos</button></div>
-   <div data-gp="cnc">${cncPane}</div><div data-gp="perso" class="hide">${persoPane}</div></div>`;}
+   <div class="goal-cols"><div class="goal-col"><h4>Objectifs de points CNC</h4>${cncPane}</div><div class="goal-col"><h4>Objectifs persos</h4>${persoPane}</div></div></div>`;}
 // ---------- qualifications sur la fiche ----------
 function qualCard(s,quals){
   const Lq=quals.map(q=>{const b=q.b||q.bc;const lim=tsec(q.tps);return {...q,best:b,old:!q.b,g:b.s-lim,lim}}).sort((a,b)=>((a.g<=0)===(b.g<=0)?0:a.g<=0?-1:1)||(a.g<=0?NIVS.indexOf(b.niv)-NIVS.indexOf(a.niv):a.g/a.lim-b.g/b.lim));
@@ -580,7 +585,6 @@ function renderFiche(id){
   <div class="card" style="margin-top:14px"><h3>Toutes les performances</h3><div class="scroll" style="max-height:420px"><table><thead><tr><th>Date</th><th>Épreuve</th><th>Bassin</th><th class="r">Temps</th><th class="r">Points</th><th>Niveau</th><th>Lieu</th><th>Club</th></tr></thead><tbody>
   ${[...s.perfs].reverse().map(p=>`<tr><td>${fdate(p.d)}</td><td>${evName(p.e)}</td><td>${p.b} m</td><td class="r"><b>${p.t}</b>${s.best[p.e+'|'+p.b]===p?' <span class="pill t120">MPP</span>':''}</td><td class="r">${p.pts}</td><td><span class="lvl ${p.niv}">${p.niv}</span></td><td>${esc(p.lieu)}</td><td class="small muted">${esc(p.club||'Douai Natation 1897')}</td></tr>`).join('')}
   </tbody></table></div></div>`;
-  $$('#goalTabs button').forEach(b=>b.onclick=()=>{$$('#goalTabs button').forEach(x=>x.classList.toggle('on',x===b));$$('#fiche [data-gp]').forEach(d=>d.classList.toggle('hide',d.dataset.gp!==b.dataset.gt))});
   $('#printBtn').onclick=()=>{try{document.body.classList.add('print-fiche');window.print();setTimeout(()=>document.body.classList.remove('print-fiche'),500)}catch(e){$('#printMsg').textContent="L'impression n'est pas disponible ici : utilise le site public ou la copie autonome."}};
   let trains=[...(f.train||[])];
   const drawTrain=()=>{$('#tList').innerHTML=trains.length?trains.map((t,i)=>`${fdate(t.d)} · ${evName(t.e)} ${t.b}m · <b>${esc(t.t)}</b> <span class="link" data-del="${i}">✕</span>`).join('<br>'):'<span class="muted">Aucun temps d’entraînement.</span>'};
