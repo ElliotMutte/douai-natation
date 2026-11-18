@@ -75,7 +75,7 @@ td.r,th.r{text-align:right}
 .subtabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .grid-t td,.grid-t th{text-align:center}.grid-t td:first-child,.grid-t th:first-child{text-align:left}
 .chip{display:inline-block;margin:2px 4px 2px 0;padding:3px 8px;border-radius:8px;background:#e8f5e9;color:#1b5e20;font-size:12px;white-space:nowrap}.chip.close{background:#fff3e0;color:#e65100}
-@media print{header,footer,nav,.noprint,.filters,#v-nageurs,#v-club,#v-cnc,#v-records,#v-interclubs,#v-qualifs,#v-entrainement,#v-echeances,#v-reseaux,details{display:none!important}
+@media print{header,footer,nav,.noprint,.filters,#v-nageurs,#v-club,#v-cnc,#v-records,#v-interclubs,#v-qualifs,#v-entrainement,#v-echeances,#v-reseaux,#v-avenirs,details{display:none!important}
  body{background:#fff}.card{break-inside:avoid;border-color:#ccc}main{padding:0;max-width:none}#v-fiche{display:block!important;margin:0!important}#v-fiche>h2{display:none}
  .scroll{max-height:none!important;overflow:visible!important}}
 footer{color:var(--mute);font-size:12px;text-align:center;padding:20px}
@@ -103,6 +103,22 @@ body.coach-mode .parent{display:none!important}
 .brand{width:100%}
 .logo{width:68px;height:68px;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.35);flex:none}
 @media(max-width:700px){.logo{width:54px;height:54px}}
+.lead{color:var(--mute);margin:0 0 12px}
+ul.tight{margin:6px 0 8px;padding-left:18px}ul.tight li{margin:4px 0}
+.gap{display:inline-block;padding:1px 7px;border-radius:99px;font-weight:700;font-size:12px;white-space:nowrap}
+.gap.ok{background:#e3f4e6;color:#1b5e20}.gap.near{background:#fff1e0;color:#b34700}.gap.far{background:#eef1f4;color:#5d6f82}
+.qchip{display:inline-flex;gap:6px;align-items:center;margin:3px 6px 3px 0;padding:4px 9px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:13px;white-space:nowrap}
+.qchip.ok{border-color:#a5d6a7;background:#f3fbf4}.qchip.near{border-color:#ffcc80;background:#fffaf2}
+.goals{border:2px solid #0aa3a3;background:linear-gradient(180deg,#f0fbfb,#fff)}
+.goal-main{font-size:16px;background:#0b2d4f;color:#fff;border-radius:10px;padding:12px 14px;margin:8px 0 12px}
+.goal-main b{color:#ffd54f}
+.goal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.goal{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+.goal .ev{font-weight:700;color:var(--navy)}
+.goal .pts{font-size:26px;font-weight:800;color:var(--navy)}.goal .pts small{font-size:14px;color:var(--mute);font-weight:600}
+.bar{height:10px;border-radius:99px;background:#e6edf3;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,#0aa3a3,#1565c0);border-radius:99px}
+.qrow td{vertical-align:middle}
+.sel{background:#f3fbf4}
 #nav button[data-v=entrainement]{display:none}
 </style>
 </head>
@@ -119,6 +135,7 @@ body.coach-mode .parent{display:none!important}
   <nav id="nav">
     <button data-v="club" class="on"><span class="coach">Club &amp; points CNC</span><span class="parent">Classements</span></button>
     <button data-v="nageurs">Nageurs &amp; fiches</button>
+    <button data-v="avenirs">Avenirs</button>
     <button data-v="interclubs" class="coach">Interclubs</button>
     <button data-v="qualifs">Temps de qualif</button>
     <button data-v="entrainement" class="coach">Entraînement</button>
@@ -146,7 +163,7 @@ body.coach-mode .parent{display:none!important}
 
   <!-- NAGEURS -->
   <section id="v-nageurs" class="hide">
-    <div class="card">
+    <div class="card"><p class="lead" style="margin-bottom:8px">Clique sur un nom pour ouvrir sa fiche : objectifs de points, qualifications, classements et progression.</p>
       <div class="filters">
         <input id="fQ" placeholder="Rechercher un nageur…" style="min-width:200px">
         <select id="fSexe"><option value="">Filles et garçons</option><option value="F">Filles</option><option value="H">Garçons</option></select>
@@ -209,6 +226,30 @@ body.coach-mode .parent{display:none!important}
   </section>
 
   <!-- ECHEANCES -->
+  <section id="v-avenirs" class="hide">
+    <div class="card"><h2>Les Avenirs du club <span class="small muted">· 11 ans et moins (nés en 2015 et après)</span></h2>
+      <p class="lead">Les meilleurs temps de nos Avenirs sur les 5 épreuves de base (bassin de 25 m), classés par total de points FFN. C'est la base pour repérer les nageurs à proposer pour la sélection du Nord.</p>
+      <div class="subtabs" id="avSx"><button data-sx="F" class="on">Filles</button><button data-sx="H">Garçons</button></div>
+      <div id="avList"></div>
+    </div>
+    <div class="grid two" style="margin-top:14px">
+      <div class="card"><h2>Coupe 263 Avenirs</h2>
+        <p>Compétition de la Ligue Hauts-de-France <b>par équipes départementales</b> : le comité du Nord sélectionne <b>8 filles et 8 garçons</b> (+ 1 remplaçant·e par sexe) parmi les Avenirs de tous les clubs du département.</p>
+        <ul class="tight">
+          <li><b>Épreuves individuelles</b> (1 par nageur, tirée au sort la veille) : 50 m battements bras en flèche (25 ventral + 25 dorsal), 50 papillon-brasse, 50 crawl-dos, 100 4 nages.</li>
+          <li><b>Relais</b> : 16 × 50 nage libre mixte (en partie avec mini-palmes), 8 × 25 apnée, relais « Totem » avec matériel, 4 × 25 4 nages mixte.</li>
+          <li>Édition 2025 : 23 novembre 2025 à Seclin. <b>Édition 2026 : date à confirmer</b> auprès du comité du Nord.</li>
+        </ul>
+        <p class="small muted">D'après le règlement sportif 2025 de la Ligue Hauts-de-France. Les épreuves étant tirées au sort, un Avenir complet sur les 4 nages a plus de chances d'être retenu.</p></div>
+      <div class="card"><h2>Les autres rendez-vous des Avenirs</h2>
+        <ul class="tight">
+          <li><b>Interclubs Avenirs</b> : équipes de 4 du club (un 50 de chaque nage + 100 4N, relais 4 × 50 NL et 4 × 50 4N).</li>
+          <li><b>Championnat régional</b> : les 5 meilleurs Avenirs de chaque département sont qualifiés pour nager le championnat régional avec les Benjamins.</li>
+          <li><b>Repère points</b> : chaque palier de 100 points FFN gagné est un vrai progrès ; la fiche de chaque nageur indique le temps à faire pour le prochain palier.</li>
+        </ul></div>
+    </div>
+  </section>
+
   <section id="v-reseaux" class="hide">
     <div class="grid two">
       <div class="card"><h2>Instagram · @douai.natation</h2><p class="small muted">Les dernières publications du club.</p>
@@ -248,23 +289,23 @@ body.coach-mode .parent{display:none!important}
   <!-- QUALIFS -->
   <section id="v-qualifs" class="hide">
     <div class="subtabs">
-      <button data-q="lvl" data-niv="Départemental" class="on">Départemental · Nord</button>
+      <button data-q="qualifies" class="on">Nageurs qualifiés</button>
+      <button data-q="lvl" data-niv="Départemental">Départemental · Nord</button>
       <button data-q="lvl" data-niv="Régional">Régional · Hauts-de-France</button>
       <button data-q="lvl" data-niv="National">National · France</button>
       <button data-q="pts">Table des points FFN</button>
-      <button data-q="qualifies">Nageurs qualifiés</button>
       <button data-q="engage" class="coach">Préparer les engagements</button>
     </div>
-    <div id="q-lvl"></div>
+    <div id="q-lvl" class="hide"></div>
     <div id="q-pts" class="card hide"></div>
     <div id="q-engage" class="card hide"></div>
-    <div id="q-qualifies" class="card hide">
+    <div id="q-qualifies" class="card"><h2 style="margin-bottom:4px">Qui est qualifié, et pour quoi ?</h2><p class="small" style="margin:0 0 10px"><span class="gap ok">✓ −0,85 s</span> qualifié, avec l'avance sur le temps limite · <span class="gap near">+0,40 s</span> pas encore qualifié, temps à gagner (moins de 3 %)</p>
       <div class="filters"><select id="qNiv"></select><select id="qComp2"></select>
         <select id="qNage"><option value="">Toutes les nages</option><option value="NL">Nage libre</option><option value="Dos">Dos</option><option value="Brasse">Brasse</option><option value="Pap">Papillon</option><option value="4N">4 nages</option></select>
         <select id="qSx"><option value="">Dames et messieurs</option><option value="F">Dames</option><option value="H">Messieurs</option></select>
         <select id="qSrc"><option value="saison">Temps de la saison 2026</option><option value="12m">12 derniers mois</option><option value="mpp">Meilleurs temps de carrière</option></select>
-        <label class="small"><input type="checkbox" id="qClose"> Afficher aussi les « presque » (moins de 3 %)</label><span class="small muted" id="qInfo"></span></div>
-      <div class="scroll" style="max-height:none"><table><thead><tr><th>Nageur</th><th>Cat.</th><th>Épreuves (temps réalisé / temps limite)</th></tr></thead><tbody id="qBody"></tbody></table></div>
+        <label class="small"><input type="checkbox" id="qClose" checked> Afficher aussi les « presque » (moins de 3 %)</label><span class="small muted" id="qInfo"></span></div>
+      <div class="scroll" style="max-height:none"><table><thead><tr><th>Nageur</th><th>Cat.</th><th>Épreuves · meilleur temps, temps limite et écart</th></tr></thead><tbody id="qBody"></tbody></table></div>
     </div>
     <details class="card coach" style="margin-top:14px"><summary class="small link">Ajouter un temps limite pour une autre compétition</summary>
       <div class="filters" id="qForm" style="margin-top:10px">
@@ -350,6 +391,47 @@ function adviceHTML(s,tt,alt){const a=advise(s,tt);if(!a)return '<p class="small
      <td class="r">${r.ok?'':r.gain>0?`<span style="color:#e65100">−${r.gain.toFixed(2)} s</span> <span class="small muted">(${(r.pct*100).toFixed(1)} %)</span>`:''}</td></tr>`).join('')}</tbody></table></div>`:''}
    ${a.nb<2?`<p class="small" style="margin-top:6px">Il faut 2 épreuves différentes${t.b?' en bassin de '+t.b+' m':''} : ${a.nb?'nager une deuxième épreuve (de préférence dans sa spécialité).':'aucune perf dans ce bassin pour l’instant, il faut s’engager en compétition en grand bassin.'}</p>`:''}
    ${alt25?'':`<p class="small muted" style="margin-top:6px">Temps visés estimés à partir du barème FFN ; épreuves classées de la plus accessible à la moins accessible.</p>`}</div>${alt25?adviceHTML(s,alt25,true):''}`;}
+const shortT=t=>String(t||'').replace(/^00:/,'').replace(/^0(\d:)/,'$1');
+const fr2=x=>Math.abs(x).toFixed(2).replace('.',',');
+function gapBadge(d,lim){if(d<=0)return `<span class="gap ok" title="Qualifié : avance sur le temps limite">✓ −${fr2(d)} s</span>`;
+  return `<span class="gap ${d<=lim*0.03?'near':'far'}" title="Temps à gagner pour être qualifié">+${fr2(d)} s</span>`;}
+// ---------- objectifs de points ----------
+function goalsCard(s){
+  const by={};for(const p of s.perfs){const k=p.e+'|'+p.b;const cur=seasonOf(p.d)===META.season;const o=by[k];if(!o||(cur&&!o.cur)||(cur===o.cur&&p.pts>o.p.pts))by[k]={p,cur};}
+  const L=Object.values(by).filter(x=>x.p.pts>0).map(x=>{const pts=x.p.pts,goal=Math.floor(pts/100)*100+100;const c=ptsTime(x.p.e,s.sexe,pts),a=ptsTime(x.p.e,s.sexe,goal);
+    const tgt=a&&c?x.p.s*a/c:null;const cap=[300,600,900,1200,1500].find(v=>v>goal);const ac=cap&&c?ptsTime(x.p.e,s.sexe,cap):null;
+    return {...x,pts,goal,tgt,gain:tgt?x.p.s-tgt:null,cap,capT:ac?x.p.s*ac/c:null}}).filter(x=>x.tgt);
+  if(!L.length)return '';
+  L.sort((a,b)=>(b.cur-a.cur)||b.pts-a.pts);const top=L.slice(0,4);
+  const main=[...top].sort((a,b)=>a.gain/a.p.s-b.gain/b.p.s)[0];
+  return `<div class="card goals" style="margin-top:14px"><h3 style="margin-bottom:0">Objectifs de points FFN</h3>
+   <div class="goal-main">Objectif prioritaire : <b>passer à ${main.goal} points</b> sur le <b>${evName(main.p.e)} (${main.p.b} m)</b>, en nageant en <b>${shortT(fmt(main.tgt))}</b>, soit <b>${fr2(main.gain)} s</b> plus vite que son meilleur temps.</div>
+   <div class="goal-grid">${top.map(x=>`<div class="goal"><div class="ev">${evName(x.p.e)} · ${x.p.b} m</div>
+     <div class="pts">${x.pts} <small>pts → objectif ${x.goal}</small></div>
+     <div class="bar"><i style="width:${Math.max(4,x.pts%100)}%"></i></div>
+     <div class="small">Meilleur temps <b>${shortT(x.p.t)}</b>${x.cur?'':` <span class="muted">(avant ${META.season})</span>`}</div>
+     <div class="small">Pour ${x.goal} pts : <b>${shortT(fmt(x.tgt))}</b> <span class="gap near">−${fr2(x.gain)} s</span></div>
+     ${x.capT?`<div class="small muted" style="margin-top:3px">Cap des ${x.cap} pts : ${shortT(fmt(x.capT))} (−${fr2(x.p.s-x.capT)} s)</div>`:''}</div>`).join('')}</div>
+   <p class="small muted" style="margin-top:8px">Les points FFN mesurent la valeur d'une performance (barème fédéral). Temps visés estimés à partir de ce barème, sur les meilleures épreuves de la saison.</p></div>`;}
+// ---------- qualifications sur la fiche ----------
+function qualCard(s,quals){
+  const Lq=quals.map(q=>{const b=q.b||q.bc;const lim=tsec(q.tps);return {...q,best:b,old:!q.b,g:b.s-lim,lim}}).sort((a,b)=>((a.g<=0)===(b.g<=0)?0:a.g<=0?-1:1)||(a.g<=0?NIVS.indexOf(b.niv)-NIVS.indexOf(a.niv):a.g/a.lim-b.g/b.lim));
+  const ok=Lq.filter(q=>q.g<=0&&!q.old);const comps=[...new Set(ok.map(q=>q.comp))];
+  const row=q=>`<tr class="qrow"><td>${q.g<=0&&!q.old?'<span class="better">✓</span>':''}</td><td class="small">${esc(q.comp)}${q.cat?' · '+esc(q.cat):''}</td><td><b>${evName(q.epr)}</b> ${q.bas==='tous'?'':q.bas+' m'}</td>
+    <td class="r">${shortT(q.best.t)}${q.old?' <span class="small muted">(avant '+META.season+')</span>':''}</td><td class="r">${shortT(q.tps)}</td><td class="r">${gapBadge(q.g,q.lim)}</td></tr>`;
+  return `<div class="card" style="margin-top:14px"><h3>Qualifications · écart entre meilleur temps et temps limite</h3>
+   ${comps.length?`<p style="margin:4px 0 10px"><b>Qualifié${s.sexe==='F'?'e':''} cette saison pour :</b> ${comps.map(c=>`<span class="gap ok">${esc(c)} · ${ok.filter(q=>q.comp===c).length} épreuve${ok.filter(q=>q.comp===c).length>1?'s':''}</span>`).join(' ')}</p>`:`<p class="small muted" style="margin:4px 0 10px">Pas encore de temps qualificatif cette saison : les écarts ci-dessous montrent les temps à gagner.</p>`}
+   ${Lq.length?`<div class="scroll" style="max-height:420px"><table><thead><tr><th></th><th>Compétition</th><th>Épreuve</th><th class="r">Meilleur temps</th><th class="r">Temps limite</th><th class="r">Écart</th></tr></thead><tbody>${Lq.map(row).join('')}</tbody></table></div>
+   <p class="small" style="margin-top:6px"><span class="gap ok">✓ −0,85 s</span> qualifié avec 0,85 s d'avance · <span class="gap near">+0,40 s</span> à gagner, moins de 3 % · <span class="gap far">+2,10 s</span> à gagner, plus de 3 %</p>`:'<p class="muted small">Aucune grille ne concerne ce nageur pour les épreuves qu’il a déjà nagées.</p>'}</div>`;}
+// ---------- Avenirs ----------
+const AV_EV=['50 NL','50 Dos','50 Brasse','50 Pap','100 4N'];let AVSX='F';
+function renderAvenirs(){
+  const A=SW.filter(s=>s.age<=11&&s.sexe===AVSX).map(s=>{const b=AV_EV.map(e=>qBest(s,e,'25','saison')||qBest(s,e,'25','mpp'));const pts=b.map(p=>p?p.pts:0);
+    const opt=[['50 crawl-dos',(pts[0]+pts[1])/2],['50 papillon-brasse',(pts[2]+pts[3])/2],['100 4 nages',pts[4]]].sort((x,y)=>y[1]-x[1])[0];
+    return {s,b,tot:pts.reduce((x,y)=>x+y,0),n:pts.filter(x=>x).length,opt:opt[1]>0?opt[0]:'–'}}).sort((a,b)=>b.tot-a.tot||b.n-a.n);
+  $('#avList').innerHTML=A.length?`<div class="scroll" style="max-height:none"><table><thead><tr><th class="r">#</th><th>Nageur</th><th>Né(e)</th>${AV_EV.map(e=>`<th class="r">${evName(e)}</th>`).join('')}<th class="r">Total pts</th><th>Point fort (Coupe 263)</th></tr></thead><tbody>
+    ${A.map((r,i)=>`<tr class="${i<8&&r.tot>0?'sel':''}"><td class="r">${i+1}</td><td>${nageurLink(r.s)}</td><td>${r.s.an}</td>${r.b.map(p=>`<td class="r">${p?`<b>${shortT(p.t)}</b><div class="small muted">${p.pts} pts</div>`:'<span class="muted">–</span>'}</td>`).join('')}<td class="r"><b>${r.tot}</b><div class="small muted">${r.n}/5 épreuves</div></td><td class="small">${r.opt}</td></tr>`).join('')}</tbody></table></div>
+    <p class="small muted" style="margin-top:6px">Fond vert : les 8 meilleurs totaux du club (une équipe départementale compte 8 ${AVSX==='F'?'filles':'garçons'}). Meilleurs temps de la saison ${META.season}, sinon meilleur temps en carrière au club. La sélection officielle est faite par le comité du Nord parmi tous les clubs.</p>`:'<p class="muted">Aucun Avenir dans cette catégorie.</p>';}
 function prep(){
   const yr=META.refYear;
   SW=DATA.map(s=>{
@@ -417,12 +499,14 @@ function renderFiche(id){
   const nt=nextTier(s.tier.v, s.cur);
   const events=[...new Set(s.perfs.map(p=>p.e+'|'+p.b))].sort((a,b)=>{const [ea,ba]=a.split('|'),[eb,bb]=b.split('|');return (ba-bb)||EVORDER.indexOf(ea)-EVORDER.indexOf(eb)});
   const d0=s.top3[0]||s.top3c[0]; const defEv=d0?d0.e+'|'+d0.b:events[0];
-  const quals=allQualifs().filter(q=>q.sexe===s.sexe&&inYears(s.an,q.ans)).map(q=>{const b=qBest(s,q.epr,q.bas,'saison');const bc=qBest(s,q.epr,q.bas,'mpp');return {...q,b,bc,d:b?b.s-tsec(q.tps):NaN}}).filter(q=>q.bc);
+  const quals=allQualifs().filter(q=>q.sexe===s.sexe&&(q.y1!==undefined?s.an>=q.y1&&s.an<=q.y2:inYears(s.an,q.ans))).map(q=>{const b=qBest(s,q.epr,q.bas,'saison');const bc=qBest(s,q.epr,q.bas,'mpp');return {...q,b,bc,d:b?b.s-tsec(q.tps):NaN}}).filter(q=>q.bc);
   $('#fiche').innerHTML=`
   <div class="noprint" style="text-align:right;margin-bottom:6px"><button class="btn ghost" id="printBtn">Imprimer / enregistrer en PDF</button> <span id="printMsg" class="small muted"></span></div>
   <div class="card"><div class="hero"><div class="avatar">${esc(initials)}</div><div style="flex:1">
     <h2>${esc(s.nom)}</h2><div class="chips"><span class="pill ${s.sexe}">${s.sexe==='F'?'Nageuse':'Nageur'}</span><span class="pill" title="Âge sportif FFN : âge atteint au cours de l'année ${META.refYear}">né(e) en ${s.an} · ${s.age} ans en ${META.refYear}</span><span class="pill">${s.cat}${s.cat!=='Seniors'?' · '+CATNAME[s.cat]:''}</span>${s.acat!==s.cat?`<span class="pill">${s.acat}</span>`:''}${grpOf(s)?`<span class="pill coach">Groupe ${esc(grpOf(s))}</span>`:''}<span class="pill coach">Spés : ${esc(speOf(s))}</span></div></div>
     <div class="kpi" style="text-align:right"><div class="lab">Rang au club</div><div class="num">${s.rang||'–'}<span class="small muted"> / ${META.nRanked}</span></div><div class="small muted">saison ${META.season}</div></div></div></div>
+  ${goalsCard(s)}
+  ${qualCard(s,quals)}
   <div class="grid two" style="margin-top:14px">
     <div class="card"><h3>3 meilleures performances · saison ${META.season}</h3><div class="top3">${(s.top3.length?s.top3:[]).map((p,i)=>`<div class="medal m${i+1}"><div class="small muted">${evName(p.e)} · ${p.b} m</div><div class="num">${p.pts} pts</div><div><b>${p.t}</b></div><div class="small muted">${fdate(p.d)} · ${esc(p.lieu)} <span class="lvl ${p.niv}">${p.niv}</span></div></div>`).join('')||'<p class="muted">Pas encore de course cette saison.</p>'}</div>
       ${s.top3c.length?`<p class="small muted" style="margin-top:10px">Meilleures perfs de carrière : ${s.top3c.map(p=>`${evName(p.e)} ${p.b}m <b>${p.t}</b> (${p.pts} pts, ${p.d.slice(0,4)})`).join(' · ')}</p>`:''}</div>
@@ -432,7 +516,6 @@ function renderFiche(id){
       ${adviceHTML(s)}
     </div>
   </div>
-  ${objCard(s)}
   <div class="grid k4" style="margin-top:14px">
     <div class="card kpi"><div class="lab">Courses saison ${META.season}</div><div class="num">${s.cur.length}</div><div class="sub">${new Set(s.cur.map(p=>p.cpt)).size} compétitions</div></div>
     <div class="card kpi"><div class="lab">Records perso battus en ${META.season}</div><div class="num">${Object.values(s.best).filter(p=>seasonOf(p.d)===META.season).length}</div><div class="sub">sur ${Object.keys(s.best).length} épreuves nagées</div></div>
@@ -464,7 +547,6 @@ function renderFiche(id){
       <div style="margin-top:8px"><button class="btn" id="mSave">Enregistrer</button> <span id="mMsg" class="save"></span></div>
       ${canWrite?'':'<p class="note">Lecture seule : seul le coach (propriétaire de la page) peut modifier ces infos.</p>'}
     </div>
-    <div class="card"><h3>Grilles de temps <span class="small muted">· ${quals.filter(q=>q.d<=0).length} temps réalisés cette saison</span></h3>${quals.length?`<div class="scroll" style="max-height:380px"><table><thead><tr><th>Grille</th><th>Épreuve</th><th class="r">Limite</th><th class="r">Saison</th><th class="r">Écart</th></tr></thead><tbody>${quals.sort((a,b)=>(isNaN(a.d)?1e9:a.d)-(isNaN(b.d)?1e9:b.d)).map(q=>`<tr><td class="small">${esc(q.comp)}${q.cat?' · '+q.cat:''}</td><td>${evName(q.epr)} ${q.bas==='tous'?'':q.bas+'m'}</td><td class="r">${esc(q.tps)}</td><td class="r">${q.b?q.b.t:'<span class="muted small">pas nagé</span>'}</td><td class="r">${q.b?(q.d<=0?'<span class="better">✓ '+q.d.toFixed(2)+' s</span>':'<span style="color:'+(q.d<=tsec(q.tps)*0.03?'#e65100':'var(--mute)')+'">+'+q.d.toFixed(2)+' s</span>'):'–'}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted small">Aucune grille ne concerne ce nageur pour les épreuves qu’il a déjà nagées.</p>'}</div>
   </div>
   <div class="card" style="margin-top:14px"><h3>Toutes les performances</h3><div class="scroll" style="max-height:420px"><table><thead><tr><th>Date</th><th>Épreuve</th><th>Bassin</th><th class="r">Temps</th><th class="r">Points</th><th>Niveau</th><th>Lieu</th><th>Club</th></tr></thead><tbody>
   ${[...s.perfs].reverse().map(p=>`<tr><td>${fdate(p.d)}</td><td>${evName(p.e)}</td><td>${p.b} m</td><td class="r"><b>${p.t}</b>${s.best[p.e+'|'+p.b]===p?' <span class="pill t120">MPP</span>':''}</td><td class="r">${p.pts}</td><td><span class="lvl ${p.niv}">${p.niv}</span></td><td>${esc(p.lieu)}</td><td class="small muted">${esc(p.club||'Douai Natation 1897')}</td></tr>`).join('')}
@@ -537,10 +619,11 @@ function renderQualifies(){
       if(b.s<=lim||(close&&b.s<=lim*1.03)) (byComp[q.niv+'|'+q.comp]=byComp[q.niv+'|'+q.comp]||[]).push({q,b,ok:b.s<=lim}); }
     for(const [k,l] of Object.entries(byComp)) res.push({s,niv:k.split('|')[0],comp:k.split('|')[1],l:l.sort((a,c)=>EVORDER.indexOf(a.q.epr)-EVORDER.indexOf(c.q.epr))});
   }
+  res.forEach(r=>r.l.sort((a,c)=>(c.ok-a.ok)||(a.b.s-tsec(a.q.tps))-(c.b.s-tsec(c.q.tps))));
   res.sort((a,b)=>NIVS.indexOf(a.niv)-NIVS.indexOf(b.niv)||a.comp.localeCompare(b.comp)||b.l.filter(x=>x.ok).length-a.l.filter(x=>x.ok).length||a.s.nom.localeCompare(b.s.nom));
   let last='';
   $('#qBody').innerHTML=res.map(r=>{const h=r.niv+r.comp!==last?`<tr><td colspan="3" style="background:#eef4fa;font-weight:700;color:var(--navy)">${esc(r.comp)} <span class="small muted">· ${esc(r.niv)}</span></td></tr>`:'';last=r.niv+r.comp;
-    return h+`<tr><td>${nageurLink(r.s)}</td><td>${r.s.cat}</td><td style="white-space:normal">${r.l.map(x=>`<span class="chip ${x.ok?'':'close'}">${evName(x.q.epr)}${x.q.bas!=='tous'?' '+x.q.bas+'m':''} · ${x.b.t} / ${x.q.tps}</span>`).join('')}</td></tr>`}).join('')||'<tr><td colspan="3" class="muted">Aucun nageur qualifié avec ces filtres.</td></tr>';
+    return h+`<tr><td>${nageurLink(r.s)}</td><td>${r.s.cat}</td><td style="white-space:normal">${r.l.map(x=>`<span class="qchip ${x.ok?'ok':'near'}"><b>${evName(x.q.epr)}${x.q.bas!=='tous'?' '+x.q.bas+'m':''}</b> ${shortT(x.b.t)} <span class="small muted">limite ${shortT(x.q.tps)}</span> ${gapBadge(x.b.s-tsec(x.q.tps),tsec(x.q.tps))}</span>`).join('')}</td></tr>`}).join('')||'<tr><td colspan="3" class="muted">Aucun nageur qualifié avec ces filtres.</td></tr>';
   const n=new Set(res.filter(r=>r.l.some(x=>x.ok)).map(r=>r.s.id)).size;
   $('#qInfo').textContent=`${n} nageurs qualifiés · ${res.reduce((a,r)=>a+r.l.filter(x=>x.ok).length,0)} temps réalisés`;
 }
@@ -821,13 +904,13 @@ async function initDB(){
 }
 let VIEW='club', FICHE=null;
 function rerender(){ if(VIEW==='nageurs'){renderNageurs();} else if(VIEW==='qualifs')renderQualifs(); else if(VIEW==='club')renderCNC(); }
-const GROUPS={club:['club','cnc','records'],nageurs:['nageurs','fiche'],interclubs:['interclubs'],qualifs:['qualifs'],entrainement:['entrainement'],echeances:['echeances'],reseaux:['reseaux']};
+const GROUPS={avenirs:['avenirs'],club:['club','cnc','records'],nageurs:['nageurs','fiche'],interclubs:['interclubs'],qualifs:['qualifs'],entrainement:['entrainement'],echeances:['echeances'],reseaux:['reseaux']};
 function show(v,id){ if(v==='fiche'||v==='cnc'||v==='records'){ return show(v==='fiche'?'nageurs':'club',id); }
   if(!COACH&&COACH_VIEWS.includes(v)) v='club';
   VIEW=v;$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));const vis=GROUPS[v];$$('main>section').forEach(s=>s.classList.toggle('hide',!vis.includes(s.id.slice(2))));
   if(v==='club'){renderNews();renderClub();renderCNC();renderRecords()}if(v==='entrainement'){renderGroup();renderPlan()}if(v==='echeances'){renderEch()}if(v==='reseaux'){$$('iframe.social').forEach(f=>{if(!f.src)f.src=f.dataset.src})}
   if(v==='nageurs'){renderNageurs();FICHE=id||FICHE||SW.filter(s=>s.rang).sort((a,b)=>a.rang-b.rang)[0].id;renderFiche(FICHE);}
-  if(v==='interclubs')renderInterclubs();if(v==='qualifs')renderQualifs();
+  if(v==='interclubs')renderInterclubs();if(v==='avenirs')renderAvenirs();if(v==='qualifs')renderQualifs();
   try{history.replaceState(null,'','#'+v)}catch(e){}
   if(id&&v==='nageurs'){$('#v-fiche').scrollIntoView({behavior:'smooth'})}else window.scrollTo(0,0);}
 
@@ -879,6 +962,7 @@ async function boot(){
   $('#fSel').innerHTML=[...SW].sort((a,b)=>a.nom.localeCompare(b.nom)).map(s=>`<option value="${s.id}">${esc(s.nom)} (${s.an})</option>`).join('');
   fillGroups();
   $('#refreshBtn').onclick=refreshData; initMode();
+  $$('#avSx button').forEach(b=>b.onclick=()=>{$$('#avSx button').forEach(x=>x.classList.toggle('on',x===b));AVSX=b.dataset.sx;renderAvenirs()});
   $('#nav').onclick=e=>{const b=e.target.closest('button');const v=b&&b.dataset.v;if(v)show(v)};
   document.body.addEventListener('click',e=>{const id=e.target.dataset?.open;if(id){show('nageurs',id)}
     const qd=e.target.dataset?.qdel;if(qd!==undefined){manual.qualifs.splice(+qd,1);persist('qualifs/list',{items:manual.qualifs});renderQualifs()}});
@@ -900,7 +984,7 @@ async function boot(){
   $('#eAdd').onclick=()=>{const e={d:$('#eDate').value,f:$('#eFin').value||null,nom:$('#eNom').value.trim(),lieu:$('#eLieu').value.trim(),niv:$('#eNiv').value,qui:$('#eQui').value.trim()};
     if(!e.d||!e.nom){$('#eMsg').textContent='Date et nom requis';return} echs.push(e); persist('echeances/list',{items:echs}).then(ok=>$('#eMsg').textContent=ok?'Enregistré ✓':'Enregistré sur cet appareil'); renderEch();};
   $('#eList').addEventListener('click',e=>{const i=e.target.dataset.edel;if(i!==undefined){echs.splice(+i,1);persist('echeances/list',{items:echs});renderEch()}});
-  const h=(location.hash||'').slice(1); show(['club','nageurs','interclubs','qualifs','entrainement','echeances','reseaux'].includes(h)?h:'club');
+  const h=(location.hash||'').slice(1); show(['club','nageurs','avenirs','interclubs','qualifs','entrainement','echeances','reseaux'].includes(h)?h:'club');
   initDB();
 }
 boot().catch(e=>{document.querySelector('main').innerHTML='<div class="card">Impossible de charger les données : '+esc(e.message)+'</div>'});
