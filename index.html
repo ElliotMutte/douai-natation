@@ -160,6 +160,11 @@ body.dev-phone .kpi .num{font-size:28px}body.dev-phone .goal-main{font-size:14px
 body.dev-phone .card{overflow-x:auto}
 @media(max-width:700px){.card{overflow-x:auto}}
 body.dev-phone #top10 td{padding:7px 4px}
+.relay{border:1px solid var(--line);border-radius:10px;padding:8px 10px 4px;margin-bottom:12px;background:#fbfdff}
+.relay-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.relay table td,.relay table th{padding:6px 8px}
+body.dev-phone #iTeams td,body.dev-phone #iTeams th{white-space:normal;padding:6px 4px;font-size:13px}body.dev-phone #iTeams .relay{padding:6px 6px 2px}
+@media(max-width:700px){#iTeams td,#iTeams th{white-space:normal;padding:6px 4px;font-size:13px}#iTeams .relay{padding:6px 6px 2px}}
 #nav button[data-v=entrainement]{display:none}
 </style>
 </head>
@@ -787,8 +792,9 @@ function renderInterclubs(){
       ${short?`<p class="note">Équipe incomplète : ${T.team.length} nageur(s) sur ${C.size}.</p>`:''}
       <p class="small muted">${C.rules}</p>
       <div class="grid two"><div><h3>Épreuves individuelles</h3><table><thead><tr><th>Épreuve</th><th>Nageur</th><th class="r">Temps</th><th class="r">Pts</th></tr></thead><tbody>
-      ${T.ind.map(x=>`<tr><td>${evName(x.e)}</td><td>${x.s?nageurLink(x.s):'<span class="muted">à pourvoir</span>'}</td><td class="r">${x.p?`<b>${x.p.t}</b>${x.p.conv?' <span class="small muted">(50 m)</span>':''}`:'<span class="muted">pas de temps</span>'}</td><td class="r">${x.p?x.p.pts:'–'}</td></tr>`).join('')}</tbody></table></div>
-      <div><h3>Relais</h3>${T.relays.map(r=>`<div style="margin-bottom:10px"><b>${r.lab}</b> <span class="small muted">· somme des temps individuels : ${isFinite(r.t)?fmt(r.t):'incomplète'}</span><div class="small">${r.legs.map((l,i)=>`${i+1}. ${nageurLink(l.s)} <span class="muted">${evName(l.e)} ${l.p?l.p.t:'–'}</span>`).join('<br>')}</div></div>`).join('')}</div></div></div>`);
+      ${T.ind.map(x=>`<tr><td>${evName(x.e)}</td><td>${x.s?nageurLink(x.s):'<span class="muted">à pourvoir</span>'}</td><td class="r">${x.p?`<b>${shortT(x.p.t)}</b>${x.p.conv?' <span class="small muted">(50 m)</span>':''}`:'<span class="muted">pas de temps</span>'}</td><td class="r">${x.p?x.p.pts:'–'}</td></tr>`).join('')}</tbody></table></div>
+      <div><h3>Relais</h3>${T.relays.map(r=>`<div class="relay"><div class="relay-h"><b>${r.lab}</b><span class="small muted">Somme des temps : <b style="color:var(--navy)">${isFinite(r.t)?shortT(fmt(r.t)):'incomplète'}</b></span></div>
+        <table><thead><tr><th class="r" style="width:28px">#</th><th>Nageur</th><th>Nage</th><th class="r">Temps</th></tr></thead><tbody>${r.legs.map((l,i)=>`<tr><td class="r muted">${i+1}</td><td>${nageurLink(l.s)}</td><td class="small">${evName(l.e)}</td><td class="r">${l.p?`<b>${shortT(l.p.t)}</b>`:'<span class="muted">pas de temps</span>'}</td></tr>`).join('')}</tbody></table></div>`).join('')}</div></div></div>`);
     const ids=new Set(T.team.map(s=>s.id)); pool=pool.filter(s=>!ids.has(s.id));
   }
   $('#iTeams').innerHTML=out.join('')||'<div class="card muted">Aucune équipe possible avec ces critères.</div>';
