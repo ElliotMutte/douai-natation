@@ -156,6 +156,10 @@ body.dev-phone th,body.dev-phone td{padding:9px 8px;font-size:14px}
 body.dev-phone input,body.dev-phone select{font-size:16px;min-height:44px;width:100%}
 body.dev-phone .adv th,body.dev-phone .adv td{white-space:normal;padding:7px 5px;font-size:13px}
 body.dev-phone .kpi .num{font-size:28px}body.dev-phone .goal-main{font-size:14px}
+.grid>*{min-width:0}
+body.dev-phone .card{overflow-x:auto}
+@media(max-width:700px){.card{overflow-x:auto}}
+body.dev-phone #top10 td{padding:7px 4px}
 #nav button[data-v=entrainement]{display:none}
 </style>
 </head>
@@ -191,8 +195,8 @@ body.dev-phone .kpi .num{font-size:28px}body.dev-phone .goal-main{font-size:14px
       <div class="card kpi coach"><div class="lab">Points CNC</div><div class="num" id="kPts">–</div><div class="sub" id="kPtsSub"></div></div>
     </div>
     <div class="club-layout" style="margin-top:14px"><div class="club-main">
-    <div class="grid" style="grid-template-columns:1fr">
-      <div class="card"><h2>Top 10 du club · saison en cours (meilleure perf en points FFN)</h2><div id="top10" style="overflow-x:auto"></div></div>
+    <div class="grid" style="grid-template-columns:minmax(0,1fr)">
+      <div class="card"><h2>Top 10 du club · saison en cours</h2><p class="small muted" style="margin:-4px 0 8px">Classé d'abord par points CNC rapportés au club, puis par meilleure performance en points FFN.</p><div id="top10" style="overflow-x:auto"></div></div>
       <div class="card"><h2>Effectif par catégorie</h2><div id="effectif" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))"></div></div>
     </div>
     <div class="card coach" style="margin-top:14px"><h2>D'où viennent les points « Compétiteurs »</h2><div id="chTiers"></div><p class="small muted">Somme des points CNC ramenés par palier (thème 3 « Les compétiteurs »).</p></div>
@@ -518,7 +522,7 @@ function prep(){
     const speAuto=Object.entries(st).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>STYLE[x[0]]||x[0]);
     return {...s, perfs, age, cat, acat:ageCat(age), best, top, top3, top3c, bestP:top3[0]||null, bestC:top[0]||null, cur, tier, speAuto, last:perfs.length?perfs[perfs.length-1].d:''};
   });
-  const ranked=SW.filter(s=>s.bestP).sort((a,b)=>b.bestP.pts-a.bestP.pts); ranked.forEach((s,i)=>s.rang=i+1); SW.forEach(s=>{if(!s.bestP)s.rang=null}); META.nRanked=ranked.length;
+  const ranked=SW.filter(s=>s.bestP).sort((a,b)=>(b.cnc26||0)-(a.cnc26||0)||b.bestP.pts-a.bestP.pts); ranked.forEach((s,i)=>s.rang=i+1); SW.forEach(s=>{if(!s.bestP)s.rang=null}); META.nRanked=ranked.length;
 }
 const F=id=>manual.fiches[id]||{};
 const grpOf=s=>F(s.id).groupe||grpOfId(s.id);
@@ -537,7 +541,7 @@ function renderClub(){
   const labs=[5,10,20,40,60,80,120,160,240];
   barSVG($('#chTiers'),labs.map(v=>v+' pts'),labs.map(v=>sums[v]||0),['#90a4ae','#26a69a','#1e88e5','#7e57c2','#fb8c00','#d81b60','#d9a400','#0b2d4f','#0b2d4f'],(v,i)=>v+' pts · '+(v/labs[i])+' nageurs');
   const t10=SW.filter(s=>s.rang).sort((a,b)=>a.rang-b.rang).slice(0,10);
-  $('#top10').innerHTML='<table><tbody>'+t10.map(s=>`<tr><td class="r muted">${s.rang}</td><td>${nageurLink(s)} <span class="pill ${s.sexe}">${s.cat}</span></td><td>${s.bestP?evName(s.bestP.e)+' '+s.bestP.b+'m':''}</td><td class="r"><b>${s.bestP?.t||''}</b></td><td class="r"><b>${s.bestP?.pts||''}</b> pts</td></tr>`).join('')+'</tbody></table>';
+  $('#top10').innerHTML='<table><tbody>'+t10.map(s=>`<tr><td class="r muted" style="width:28px">${s.rang}</td><td style="white-space:normal">${nageurLink(s)} <span class="pill ${s.sexe}">${s.cat}</span>${s.bestP?`<div class="small muted">${evName(s.bestP.e)} ${s.bestP.b} m · <b style="color:var(--navy)">${shortT(s.bestP.t)}</b> · ${s.bestP.pts} pts FFN</div>`:''}</td><td class="r"><span class="gap ok">${s.cnc26||0} pts CNC</span></td></tr>`).join('')+'</tbody></table>';
   $('#effectif').innerHTML=CATS.map(c=>{const l=SW.filter(s=>s.cat===c);return `<div class="kpi"><div class="lab">${c}</div><div class="num">${l.length}</div><div class="sub">${l.filter(s=>s.sexe==='F').length} F · ${l.filter(s=>s.sexe==='H').length} G</div></div>`}).join('');
 }
 let sortK='rang', sortD=1;
