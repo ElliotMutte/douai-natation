@@ -170,6 +170,9 @@ body.dev-phone #top10 td{padding:7px 4px}
 .relay table td,.relay table th{padding:6px 8px}
 body.dev-phone #iTeams td,body.dev-phone #iTeams th{white-space:normal;padding:6px 4px;font-size:13px}body.dev-phone #iTeams .relay{padding:6px 6px 2px}
 @media(max-width:700px){#iTeams td,#iTeams th{white-space:normal;padding:6px 4px;font-size:13px}#iTeams .relay{padding:6px 6px 2px}}
+body.dev-phone #grpView td,body.dev-phone #grpView th{padding:7px 5px}
+@media(max-width:700px){#grpView td,#grpView th{padding:7px 5px}#grpView td:first-child{white-space:normal;min-width:80px}}
+body.dev-phone #grpView td:first-child{white-space:normal;min-width:80px}
 #nav button[data-v=entrainement]{display:none}
 </style>
 </head>
@@ -812,16 +815,30 @@ const g2Name=x=>{const s=x.id&&SW.find(z=>z.id===x.id);if(s)return nageurLink(s)
 function renderG2(){const G=META.g2;if(!G||!$('#g2T'))return;
   const names=[];const add=x=>{const k=x.id||x.n.toLowerCase();if(!names.some(y=>(y.id||y.n.toLowerCase())===k))names.push(x)};G.presences.forEach(add);G.chronos.forEach(add);
   const find=(arr,x)=>arr.find(y=>(x.id&&y.id===x.id)||y.n.toLowerCase()===x.n.toLowerCase());
-  $('#g2T').innerHTML=`<thead><tr><th>Nageur</th><th class="r">Présence</th>${G2COLS.map(c=>`<th class="r">${c.replace('Brasse','Br.')}</th>`).join('')}<th class="r">Minimax<br><span class="small">bien nagé / à fond</span></th></tr></thead><tbody>`+
+  $('#g2T').innerHTML=`<thead><tr><th>Nageur</th>${G2COLS.map(c=>`<th class="r">${c.replace('Brasse','Br.')}</th>`).join('')}<th class="r">Minimax<br><span class="small">bien nagé / à fond</span></th></tr></thead><tbody>`+
    names.map(x=>{const p=find(G.presences,x),c=find(G.chronos,x),m=find(G.minimax,x);
-    return `<tr><td>${g2Name(x)}</td><td class="r">${p?`<b>${p.p}</b>/${p.tot} <span class="small muted">${Math.round(p.p/p.tot*100)} %</span>`:'–'}</td>${G2COLS.map(k=>`<td class="r">${c&&c.t[k]?(c.t[k][1]?fmt(c.t[k][1]).replace(/^00:/,''):esc(c.t[k][0])):''}</td>`).join('')}<td class="r">${m?esc(m.bien)+' / '+esc(m.fond):''}</td></tr>`}).join('')+'</tbody>';
+    return `<tr><td>${g2Name(x)}</td>${G2COLS.map(k=>`<td class="r">${c&&c.t[k]?(c.t[k][1]?fmt(c.t[k][1]).replace(/^00:/,''):esc(c.t[k][0])):''}</td>`).join('')}<td class="r">${m?esc(m.bien)+' / '+esc(m.fond):''}</td></tr>`}).join('')+'</tbody>';
 }
+const T25=['25 Pap','25 Dos','25 Brasse','25 NL'];
+function g2Prev(G,x,e){const c=G.chronos.find(y=>(x.id&&y.id===x.id)||y.n.trim().toLowerCase()===x.n.trim().toLowerCase());return c&&c.t[e]?c.t[e][1]:null}
+function g2TestsCard(G){const T=G.tests[G.tests.length-1];
+  const best={};T25.forEach(e=>{best[e]=Math.min(...T.rows.map(r=>r.t[e]?r.t[e][1]:99))});
+  const nm=x=>{const s=x.id&&SW.find(z=>z.id===x.id);return s?nageurLink(s):esc((G.full&&G.full[x.n])||x.n)};
+  return `<div class="card" style="margin-top:14px"><h2>${esc(T.lab)}</h2>
+   <p class="small muted" style="margin-top:-4px">Chronos 25 m saisis le ${fdate(T.d)}. Sous chaque temps : l'écart avec le chrono de septembre (vert = plus rapide). En gras : meilleur temps du groupe.</p>
+   <div style="overflow-x:auto"><table><thead><tr><th>Nageur</th>${T25.map(e=>`<th class="r" style="padding-left:6px;padding-right:6px">${e.replace('Pap','Pap.')}</th>`).join('')}</tr></thead><tbody>
+   ${[...T.rows].sort((a,b)=>(a.t['25 NL']||[0,99])[1]-(b.t['25 NL']||[0,99])[1]).map(r=>`<tr><td>${nm(r)}</td>${T25.map(e=>{const v=r.t[e];if(!v)return '<td></td>';const pv=g2Prev(G,r,e);const d=pv?v[1]-pv:null;const note=r.note&&r.note[e];
+     return `<td class="r"><span style="${v[1]===best[e]?'font-weight:800;color:var(--navy)':''}">${v[1].toFixed(2)}</span>${note?` <span class="gap near" title="${esc(note)}">!</span>`:''}${d!==null?`<div class="small" style="color:${d<0?'#1b5e20':d>0?'#c62828':'#5d6f82'}">${d<0?'−':'+'}${Math.abs(d).toFixed(2)} s</div>`:''}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>
+   ${T.rows.some(r=>r.note)?`<p class="small muted">« ! » : remarque notée sur la feuille de chronos (passer la souris dessus).</p>`:''}</div>`;}
+function g2TestKpi(s){const G=META.g2;if(!G.tests)return '';const T=G.tests[G.tests.length-1];const r=T.rows.find(x=>x.id===s.id);if(!r)return '';
+  return `<div class="kpi" style="grid-column:span 2"><div class="lab">${esc(T.lab)}</div><div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">${T25.map(e=>{const v=r.t[e];if(!v)return '';const pv=g2Prev(G,r,e);const d=pv?v[1]-pv:null;
+    return `<div><div class="small muted">${e.replace('25 ','25 m ')}</div><div style="font-size:20px;font-weight:800;color:var(--navy)">${v[1].toFixed(2)}</div>${d!==null?`<div class="small" style="color:${d<0?'#1b5e20':'#c62828'}">${d<0?'−':'+'}${Math.abs(d).toFixed(2)} s vs sept.</div>`:''}</div>`}).join('')}</div></div>`;}
 function g2Fiche(s){const G=META.g2;if(!G||!G.membres.includes(s.id))return '';
   const p=G.presences.find(x=>x.id===s.id),c=G.chronos.find(x=>x.id===s.id),m=G.minimax.find(x=>x.id===s.id);
   return `<div class="card" style="margin-top:14px"><h3>Suivi Groupe 2 · saison 2026-27</h3><div class="grid k4">
-   <div class="kpi"><div class="lab">Présence (septembre)</div><div class="num">${p?p.p+'/'+p.tot:'–'}</div><div class="sub">${p?Math.round(p.p/p.tot*100)+' % des séances':''}</div>${p?`<div style="display:flex;gap:3px;margin-top:6px">${p.s.map((v,i)=>`<span title="${esc(G.dates[i])}" style="width:14px;height:14px;border-radius:3px;background:${v?'var(--teal)':'#e3e9ef'}"></span>`).join('')}</div>`:''}</div>
+   ${g2TestKpi(s)}
    <div class="kpi"><div class="lab">Minimax 25 m</div><div class="num">${m?esc(m.bien)+' / '+esc(m.fond):'–'}</div><div class="sub">bien nagé / à fond (temps + coups de bras)</div></div></div>
-   ${c&&Object.keys(c.t).length?`<h3 style="margin-top:12px">Chronos d'entraînement</h3><table><thead><tr><th>Épreuve</th><th class="r">Chrono entraînement</th><th class="r">Meilleur en compétition 2026</th></tr></thead><tbody>${Object.entries(c.t).map(([k,v])=>{const b=k.startsWith('25 ')?null:qBest(s,k,'tous','saison');return `<tr><td>${k.startsWith('25 ')?k.replace('25 ','25 m '):evName(k)}</td><td class="r"><b>${v[1]?fmt(v[1]):esc(v[0])}</b> <span class="small muted">(${esc(v[0])})</span></td><td class="r">${b?b.t+' <span class="small muted">'+b.b+' m</span>':'–'}</td></tr>`}).join('')}</tbody></table><p class="small muted">Dans la fiche d'origine, les temps en orange correspondent à la saison dernière : la couleur n'est pas visible dans l'export.</p>`:''}</div>`;
+   ${c&&Object.keys(c.t).length?`<h3 style="margin-top:12px">Chronos de septembre (fiche du groupe)</h3><table><thead><tr><th>Épreuve</th><th class="r">Chrono entraînement</th><th class="r">Meilleur en compétition 2026</th></tr></thead><tbody>${Object.entries(c.t).map(([k,v])=>{const b=k.startsWith('25 ')?null:qBest(s,k,'tous','saison');return `<tr><td>${k.startsWith('25 ')?k.replace('25 ','25 m '):evName(k)}</td><td class="r"><b>${v[1]?fmt(v[1]):esc(v[0])}</b> <span class="small muted">(${esc(v[0])})</span></td><td class="r">${b?b.t+' <span class="small muted">'+b.b+' m</span>':'–'}</td></tr>`}).join('')}</tbody></table><p class="small muted">Dans la fiche d'origine, les temps en orange correspondent à la saison dernière : la couleur n'est pas visible dans l'export.</p>`:''}</div>`;
 }
 function renderPlan(){const G=META.g2;if(!G||GCUR!=='g2'){$('#planCard').classList.add('hide');return}$('#planCard').classList.remove('hide');const P=G.planif;
   $('#planCard').innerHTML=`<h2>Groupe 2 · planification 2026-27</h2><div class="grid two"><div><h3>Cycles de travail</h3><div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">${P.periodes.map((x,i)=>`<div style="flex:1;min-width:90px;background:linear-gradient(160deg,#e3f2fd,#e0f2f1);border-radius:8px;padding:8px"><b>${esc(x)}</b><div class="small">${esc(P.axes[i]||'')}</div></div>`).join('')}</div><p class="small muted">Nages proposées en compétition : ${esc(P.nages)}</p></div>
@@ -891,14 +908,10 @@ function renderGroup(){const k=GCUR,G=gdoc(k),ro=!canWrite;
   const today=new Date().toISOString().slice(0,10);
   const ses=[...G.seances].sort((a,b)=>a.d<b.d?-1:1);
   const imp=k==='g2'&&META.g2?META.g2:null;
-  const pres=key=>{let p=0,t=0;ses.forEach(x=>{t++;if(x.p.includes(key))p++});if(imp){const nm=key.startsWith('n:')?key.slice(2):null;const x=imp.presences.find(y=>(y.id&&y.id===key)||(nm&&(imp.full[y.n.trim()]||y.n.trim()).toLowerCase()===nm.toLowerCase()));t+=imp.dates.length;if(x)p+=x.p}return t?`${p}/${t} <span class="small muted">${Math.round(p/t*100)} %</span>`:'–'};
-  $('#grpView').innerHTML=`<div class="card"><h2>${GRP[k]} · effectif et présences</h2>
-   <div style="overflow-x:auto"><table><thead><tr><th>Nageur</th><th class="r">Présence</th>${ses.slice(-8).map(x=>`<th class="r">${fdate(x.d).slice(0,5)}</th>`).join('')}${ro?'':'<th></th>'}</tr></thead><tbody>
-   ${G.membres.map(m=>`<tr><td>${mName(m)}</td><td class="r">${pres(m)}</td>${ses.slice(-8).map(x=>`<td class="r">${x.p.includes(m)?'<span class="better">✓</span>':'<span class="muted">·</span>'}</td>`).join('')}${ro?'':`<td><span class="link small" data-gdel="${esc(m)}">retirer</span></td>`}</tr>`).join('')||`<tr><td colspan="3" class="muted">Aucun nageur dans ce groupe.</td></tr>`}</tbody></table></div>
-   ${imp?`<p class="small muted">Les présences de septembre viennent de la fiche Google Sheets du groupe.</p>`:''}
+  $('#grpView').innerHTML=`${imp&&imp.tests?g2TestsCard(imp).replace('style="margin-top:14px"','style="margin-bottom:14px"'):''}<div class="card"><h2>${GRP[k]} · effectif <span class="small muted">(${G.membres.length} nageurs)</span></h2>
+   <div style="columns:4 200px;column-gap:18px">${G.membres.map(m=>`<div style="break-inside:avoid;padding:4px 0;border-bottom:1px solid var(--line)">${mName(m)}${ro?'':` <span class="link small" data-gdel="${esc(m)}" title="retirer du groupe">✕</span>`}</div>`).join('')||'<p class="muted">Aucun nageur dans ce groupe.</p>'}</div>
    ${ro?'':`<div class="filters" style="margin-top:10px"><select id="gAddSel"><option value="">Ajouter un nageur…</option>${[...SW].sort((a,b)=>a.nom.localeCompare(b.nom)).filter(x=>!G.membres.includes(x.id)).map(x=>`<option value="${x.id}">${esc(x.nom)} (${x.an})</option>`).join('')}</select><input id="gAddNom" placeholder="ou nom d'un nouveau licencié" style="width:220px"><button class="btn ghost" id="gAdd">Ajouter</button></div>
-   <details style="margin-top:8px"><summary class="link small">Faire l'appel d'une séance</summary><div class="filters" style="margin-top:8px"><input type="date" id="sDate" value="${today}"><span class="small muted">Coche les présents :</span></div>
-     <div style="columns:3 200px">${G.membres.map(m=>`<label class="small" style="display:block"><input type="checkbox" class="sPres" value="${esc(m)}"> ${mName(m).replace(/<[^>]+>/g,'')}</label>`).join('')}</div><button class="btn" id="sSave" style="margin-top:8px">Enregistrer la séance</button> <span id="gMsg" class="save"></span></details>`}
+`}
   </div>
   <div class="card" style="margin-top:14px"><h2>${GRP[k]} · chronos d'entraînement</h2>
    ${ro?'':`<div class="filters"><input type="date" id="cDate" value="${today}"><select id="cNag">${G.membres.map(m=>`<option value="${esc(m)}">${mName(m).replace(/<[^>]+>/g,'')}</option>`).join('')}</select><select id="cEv">${['25 NL','25 Dos','25 Brasse','25 Pap',...EVORDER].map(e=>`<option>${e}</option>`).join('')}</select><input id="cT" placeholder="00:35.20" style="width:100px"><input id="cNote" placeholder="remarque (départ, coups de bras…)" style="width:220px"><button class="btn ghost" id="cAdd">Ajouter</button></div>`}
@@ -911,7 +924,7 @@ function renderGroup(){const k=GCUR,G=gdoc(k),ro=!canWrite;
   const done=async()=>{const ok=await gsave(k);renderGroup();fillGroups();return ok};
   $('#gAdd').onclick=()=>{const v=$('#gAddSel').value||($('#gAddNom').value.trim()?'n:'+$('#gAddNom').value.trim():'');if(v&&!G.membres.includes(v)){G.membres.push(v);done()}};
   $('#grpView').querySelectorAll('[data-gdel]').forEach(b=>b.onclick=()=>{G.membres=G.membres.filter(x=>x!==b.dataset.gdel);done()});
-  $('#sSave').onclick=()=>{const d=$('#sDate').value;if(!d)return;const p=[...document.querySelectorAll('.sPres:checked')].map(x=>x.value);G.seances=G.seances.filter(x=>x.d!==d);G.seances.push({d,p});done()};
+  ($('#sSave')||{}).onclick=()=>{const d=$('#sDate').value;if(!d)return;const p=[...document.querySelectorAll('.sPres:checked')].map(x=>x.value);G.seances=G.seances.filter(x=>x.d!==d);G.seances.push({d,p});done()};
   $('#cAdd').onclick=()=>{const t=$('#cT').value.trim();if(!isFinite(tsec(t)))return;G.chronos.push({d:$('#cDate').value,k:$('#cNag').value,e:$('#cEv').value,t,n:$('#cNote').value.trim()});done()};
   $('#grpView').querySelectorAll('[data-cdel]').forEach(b=>b.onclick=()=>{G.chronos.splice(+b.dataset.cdel,1);done()});
   $('#gNotesSave').onclick=()=>{G.notes=$('#gNotes').value;gsave(k)};
@@ -981,6 +994,7 @@ async function initDB(){
     const timer=setTimeout(()=>{},10000);
     db.collection('fiches').onSnapshot(snap=>{clearTimeout(timer);const o={};(snap.docs||snap).forEach(d=>{o[d.id]=d.data?d.data():d});manual.fiches={...manual.fiches,...o};fillGroups();rerender()},()=>{});
     Object.keys(GRP).forEach(k=>db.doc('groupes/'+k).onSnapshot(d=>{const v=d&&(d.data?d.data():d);if(v&&v.membres){gdata[k]=v;fillGroups();if(VIEW==='entrainement'&&GCUR===k)renderGroup()}},()=>{}));
+    db.doc('groupes/g2tests').onSnapshot(d=>{const v=d&&(d.data?d.data():d);if(v&&v.tests&&META.g2){const cur=META.g2.tests||[];if(v.tests.length>=cur.length){META.g2.tests=v.tests;if(VIEW==='entrainement')renderGroup()}}},()=>{});
     db.doc('echeances/list').onSnapshot(d=>{const v=d&&(d.data?d.data():d);if(v&&v.items){echs=v.items;if(VIEW==='echeances')renderEch()}},()=>{});
     db.doc('qualifs/list').onSnapshot(d=>{const v=d&&(d.data?d.data():d);if(v&&v.items){manual.qualifs=v.items;rerender()}},()=>{});
   }catch(e){}
