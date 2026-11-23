@@ -173,6 +173,10 @@ body.dev-phone #iTeams td,body.dev-phone #iTeams th{white-space:normal;padding:6
 body.dev-phone #grpView td,body.dev-phone #grpView th{padding:7px 5px}
 @media(max-width:700px){#grpView td,#grpView th{padding:7px 5px}#grpView td:first-child{white-space:normal;min-width:80px}}
 body.dev-phone #grpView td:first-child{white-space:normal;min-width:80px}
+.tfT input{width:58px;padding:8px 5px;font-size:16px;text-align:right;border:1px solid var(--line);border-radius:8px}
+.tfT td{padding:4px 2px}.tfT td:first-child{max-width:96px;white-space:normal;line-height:1.2}
+@media(max-width:700px){.tfT input{width:44px;padding:8px 2px}.tfT td:first-child{max-width:70px;font-size:12px;word-break:break-word}.tfT th{padding:4px 2px}}
+body.dev-phone .tfT input{width:44px;padding:8px 2px}body.dev-phone .tfT td:first-child{max-width:70px;font-size:12px;word-break:break-word}body.dev-phone .tfT th{padding:4px 2px}
 #nav button[data-v=entrainement]{display:none}
 </style>
 </head>
@@ -290,16 +294,16 @@ body.dev-phone #grpView td:first-child{white-space:normal;min-width:80px}
     <div class="card" style="margin-top:14px" id="avRank"></div>
     <div class="grid two" style="margin-top:14px">
       <div class="card"><h2>Coupe 263 Avenirs</h2>
-        <p>Compétition de la Ligue Hauts-de-France <b>par équipes départementales</b> : le comité du Nord sélectionne <b>8 filles et 8 garçons</b> (+ 1 remplaçant·e par sexe) parmi les Avenirs de tous les clubs du département.</p>
+        <p>Compétition de la Ligue Hauts-de-France <b>par équipes départementales</b> : le comité du Nord sélectionne <b>8 filles et 8 garçons</b> (+ 1 remplaçant·e par sexe) parmi les Avenirs de tous les clubs du département. <b>Pour 2026 : nageurs nés en 2016</b> (et éventuellement 2017), sélection arrêtée le 18 octobre 2026 ; les 2015 (U11) sont sélectionnés via la Webconfront@tion d'automne.</p>
         <ul class="tight">
           <li><b>Épreuves individuelles</b> (1 par nageur, tirée au sort la veille) : 50 m battements bras en flèche (25 ventral + 25 dorsal), 50 papillon-brasse, 50 crawl-dos, 100 4 nages.</li>
           <li><b>Relais</b> : 16 × 50 nage libre mixte (en partie avec mini-palmes), 8 × 25 apnée, relais « Totem » avec matériel, 4 × 25 4 nages mixte.</li>
-          <li>Édition 2025 : 23 novembre 2025 à Seclin. <b>Édition 2026 : date à confirmer</b> auprès du comité du Nord.</li>
+          <li>Édition 2025 : 23 novembre 2025 à Seclin. <b>Édition 2026 : date et lieu non précisés</b> dans le programme du comité du Nord.</li>
         </ul>
         <p class="small muted">D'après le règlement sportif 2025 de la Ligue Hauts-de-France. Les épreuves étant tirées au sort, un Avenir complet sur les 4 nages a plus de chances d'être retenu.</p></div>
       <div class="card"><h2>Les autres rendez-vous des Avenirs</h2>
         <ul class="tight">
-          <li><b>Découv'Nat · dimanche 6 décembre 2026</b> (lieu à confirmer ; en décembre 2025, Douai nageait à <b>Somain</b>) : journée du comité du Nord pour les Avenirs. <b>Les mêmes courses pour les 2015 et les 2016-2017</b> : chacun choisit dans le même programme. En décembre 2025 : 50 NL, 100 NL, 50 dos, 50 brasse, 50 papillon, 200 4 nages et des épreuves éducatives. C'est l'occasion de nager les épreuves manquantes du tableau ci-dessus.</li>
+          <li><b>Découv'Nat · dimanche 6 décembre 2026</b> (4e journée ; <b>engagements du 25 novembre au 2 décembre</b>, 3 € par épreuve ; lieu fixé par district, Douai nageait à <b>Somain</b> en décembre 2025) : journée du comité du Nord pour les Avenirs. <b>Les mêmes courses pour les 2015 et les 2016-2017</b> : chacun choisit dans le même programme. En décembre 2025 : 50 NL, 100 NL, 50 dos, 50 brasse, 50 papillon, 200 4 nages et des épreuves éducatives. C'est l'occasion de nager les épreuves manquantes du tableau ci-dessus.</li>
           <li><b>Interclubs Avenirs</b> : équipes de 4 du club (un 50 de chaque nage + 100 4N, relais 4 × 50 NL et 4 × 50 4N).</li>
           <li><b>Championnat régional</b> : les 5 meilleurs Avenirs de chaque département sont qualifiés pour nager le championnat régional avec les Benjamins.</li>
           <li><b>Repère points</b> : chaque palier de 100 points FFN gagné est un vrai progrès ; la fiche de chaque nageur indique le temps à faire pour le prochain palier.</li>
@@ -820,6 +824,39 @@ function renderG2(){const G=META.g2;if(!G||!$('#g2T'))return;
     return `<tr><td>${g2Name(x)}</td>${G2COLS.map(k=>`<td class="r">${c&&c.t[k]?(c.t[k][1]?fmt(c.t[k][1]).replace(/^00:/,''):esc(c.t[k][0])):''}</td>`).join('')}<td class="r">${m?esc(m.bien)+' / '+esc(m.fond):''}</td></tr>`}).join('')+'</tbody>';
 }
 const T25=['25 Pap','25 Dos','25 Brasse','25 NL'];
+const TESTS={};let TSEL={};
+function testsOf(k){if(!TESTS[k]){const l=local('tests_'+k);TESTS[k]=(k==='g2'&&META.g2&&META.g2.tests)?[...META.g2.tests]:[];if(l&&l.length>TESTS[k].length)TESTS[k]=l}return TESTS[k]}
+async function saveTests(k){local('tests_'+k,TESTS[k]);if(k==='g2'&&META.g2)META.g2.tests=TESTS[k];if(!db)return true;try{await db.doc('groupes/'+k+'tests').set({tests:TESTS[k]});return true}catch(e){return false}}
+function parseChrono(v){v=String(v||'').trim().replace(/[’´`]/g,"'").replace(/\s/g,'');if(!v)return null;let m=v.match(/^(\d+)[:'h](\d{1,2})[.,'"](\d{1,2})$/);if(m)return +m[1]*60+ +m[2]+ +(m[3].padEnd(2,'0'))/100;
+  m=v.match(/^(\d{1,3})[.,'"](\d{1,2})$/);if(m)return +m[1]+ +(m[2].padEnd(2,'0'))/100;m=v.match(/^(\d{1,3})$/);if(m)return +m[1];return NaN}
+function testsCard(k,G){const S=testsOf(k);if(!S.length)return '';const i=Math.min(TSEL[k]??S.length-1,S.length-1);const T=S[i];
+  const prevOf=(r,e)=>{for(let j=i-1;j>=0;j--){const x=S[j].rows.find(y=>(r.id&&y.id===r.id)||y.n.trim().toLowerCase()===r.n.trim().toLowerCase());if(x&&x.t[e])return [x.t[e][1],S[j].d]}if(k==='g2'&&META.g2){const v=g2Prev(META.g2,r,e);if(v)return [v,'sept']}return null};
+  const best={};T25.forEach(e=>{best[e]=Math.min(...T.rows.map(r=>r.t[e]?r.t[e][1]:99))});
+  const nm=x=>{const s=x.id&&SW.find(z=>z.id===x.id);return s?nageurLink(s):esc((META.g2&&META.g2.full&&META.g2.full[x.n])||x.n)};
+  return `<div class="card" style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><h2 style="margin:0">${esc(T.lab)}${/\d{4}/.test(T.lab)?'':' · '+fdate(T.d)}</h2>
+    ${S.length>1?`<select id="tSel">${S.map((x,j)=>`<option value="${j}" ${j===i?'selected':''}>${fdate(x.d)} · ${esc(x.lab)}</option>`).join('')}</select>`:''}</div>
+   <p class="small muted">Chronos du ${fdate(T.d)}. Sous chaque temps : l'écart avec le test précédent du nageur (vert = plus rapide). En gras : meilleur temps du groupe.</p>
+   <div style="overflow-x:auto"><table><thead><tr><th>Nageur</th>${T25.map(e=>`<th class="r" style="padding-left:6px;padding-right:6px">${e.replace('Pap','Pap.')}</th>`).join('')}</tr></thead><tbody>
+   ${[...T.rows].sort((a,b)=>(a.t['25 NL']||[0,99])[1]-(b.t['25 NL']||[0,99])[1]).map(r=>`<tr><td>${nm(r)}</td>${T25.map(e=>{const v=r.t[e];if(!v)return '<td></td>';const pv=prevOf(r,e);const d=pv?v[1]-pv[0]:null;const note=r.note&&r.note[e];
+     return `<td class="r"><span style="${v[1]===best[e]?'font-weight:800;color:var(--navy)':''}">${v[1].toFixed(2)}</span>${note?` <span class="gap near" title="${esc(note)}">!</span>`:''}${d!==null?`<div class="small" style="color:${d<0?'#1b5e20':d>0?'#c62828':'#5d6f82'}" title="vs ${pv[1]==='sept'?'septembre':fdate(pv[1])}">${d<0?'−':'+'}${Math.abs(d).toFixed(2)} s</div>`:''}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>
+   ${T.rows.some(r=>r.note)?`<p class="small muted">« ! » : remarque notée avec le chrono.</p>`:''}</div>`;}
+function testsForm(k,G){const today=new Date().toLocaleDateString('sv');
+  return `<details class="card" id="tForm" style="margin-bottom:14px"><summary><b>➕ Saisir des tests 25 m</b> <span class="small muted">au bord du bassin, depuis le téléphone</span></summary>
+   <div class="filters" style="margin-top:10px"><input type="date" id="tfDate" value="${today}"><input id="tfLab" value="Tests 25 m" style="width:180px" aria-label="Nom de la séance"></div>
+   <p class="small muted" style="margin:6px 0">Tape les temps comme sur ta feuille : 16'95, 16.95 ou 16,95. Laisse vide si le nageur n'a pas nagé.</p>
+   <div style="overflow-x:auto"><table class="tfT"><thead><tr><th>Nageur</th>${T25.map(e=>`<th class="r">${{'25 Pap':'Pap.','25 Dos':'Dos','25 Brasse':'Brasse','25 NL':'NL'}[e]}</th>`).join('')}</tr></thead><tbody>
+   ${G.membres.map(m=>`<tr data-k="${esc(m)}"><td class="small">${mName(m).replace(/<[^>]+>/g,'')}</td>${T25.map(e=>`<td><input class="tfIn" data-e="${e}" inputmode="decimal" autocomplete="off" placeholder="–"></td>`).join('')}</tr>`).join('')}</tbody></table></div>
+   <button class="btn" id="tfSave" style="margin-top:10px">Enregistrer les tests</button> <span id="tfMsg" class="save"></span></details>`;}
+function bindTests(k){const sel=$('#tSel');if(sel)sel.onchange=()=>{TSEL[k]=+sel.value;renderGroup()};
+  const b=$('#tfSave');if(!b)return;
+  $$('.tfIn').forEach(inp=>inp.oninput=()=>{const v=parseChrono(inp.value);inp.style.borderColor=v===null||!isNaN(v)?'':'#c62828'});
+  b.onclick=async()=>{const rows=[];let bad=0;
+    $$('#tForm tr[data-k]').forEach(tr=>{const key=tr.dataset.k;const t={};tr.querySelectorAll('.tfIn').forEach(inp=>{const v=parseChrono(inp.value);if(v===null)return;if(isNaN(v)||v<5||v>120){bad++;return}t[inp.dataset.e]=[inp.value.trim(),Math.round(v*100)/100]});
+      if(Object.keys(t).length){const id=key.startsWith('n:')?null:key;const s=id&&SW.find(z=>z.id===id);rows.push({n:key.startsWith('n:')?key.slice(2):(s?s.nom.split(' ').slice(-1)[0]:key),id,t})}});
+    if(bad){$('#tfMsg').textContent=bad+' temps illisible(s) en rouge : corrige-les.';return}
+    if(!rows.length){$('#tfMsg').textContent='Aucun temps saisi.';return}
+    testsOf(k).push({d:$('#tfDate').value,lab:($('#tfLab').value.trim()||'Tests 25 m'),rows});TSEL[k]=TESTS[k].length-1;
+    const ok=await saveTests(k);renderGroup();const g=$('#grpView');g&&g.scrollIntoView({behavior:'smooth',block:'start'});const m=document.createElement('div');m.className='note';m.style.marginBottom='10px';m.textContent=ok?'Tests enregistrés ✓':'Tests enregistrés sur cet appareil';g&&g.prepend(m);setTimeout(()=>m.remove(),5000)};}
 function g2Prev(G,x,e){const c=G.chronos.find(y=>(x.id&&y.id===x.id)||y.n.trim().toLowerCase()===x.n.trim().toLowerCase());return c&&c.t[e]?c.t[e][1]:null}
 function g2TestsCard(G){const T=G.tests[G.tests.length-1];
   const best={};T25.forEach(e=>{best[e]=Math.min(...T.rows.map(r=>r.t[e]?r.t[e][1]:99))});
@@ -830,7 +867,7 @@ function g2TestsCard(G){const T=G.tests[G.tests.length-1];
    ${[...T.rows].sort((a,b)=>(a.t['25 NL']||[0,99])[1]-(b.t['25 NL']||[0,99])[1]).map(r=>`<tr><td>${nm(r)}</td>${T25.map(e=>{const v=r.t[e];if(!v)return '<td></td>';const pv=g2Prev(G,r,e);const d=pv?v[1]-pv:null;const note=r.note&&r.note[e];
      return `<td class="r"><span style="${v[1]===best[e]?'font-weight:800;color:var(--navy)':''}">${v[1].toFixed(2)}</span>${note?` <span class="gap near" title="${esc(note)}">!</span>`:''}${d!==null?`<div class="small" style="color:${d<0?'#1b5e20':d>0?'#c62828':'#5d6f82'}">${d<0?'−':'+'}${Math.abs(d).toFixed(2)} s</div>`:''}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>
    ${T.rows.some(r=>r.note)?`<p class="small muted">« ! » : remarque notée sur la feuille de chronos (passer la souris dessus).</p>`:''}</div>`;}
-function g2TestKpi(s){const G=META.g2;if(!G.tests)return '';const T=G.tests[G.tests.length-1];const r=T.rows.find(x=>x.id===s.id);if(!r)return '';
+function g2TestKpi(s){const G=META.g2;const S=testsOf('g2');if(!S.length)return '';const T=S[S.length-1];const r=T.rows.find(x=>x.id===s.id);if(!r)return '';
   return `<div class="kpi" style="grid-column:span 2"><div class="lab">${esc(T.lab)}</div><div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">${T25.map(e=>{const v=r.t[e];if(!v)return '';const pv=g2Prev(G,r,e);const d=pv?v[1]-pv:null;
     return `<div><div class="small muted">${e.replace('25 ','25 m ')}</div><div style="font-size:20px;font-weight:800;color:var(--navy)">${v[1].toFixed(2)}</div>${d!==null?`<div class="small" style="color:${d<0?'#1b5e20':'#c62828'}">${d<0?'−':'+'}${Math.abs(d).toFixed(2)} s vs sept.</div>`:''}</div>`}).join('')}</div></div>`;}
 function g2Fiche(s){const G=META.g2;if(!G||!G.membres.includes(s.id))return '';
@@ -853,8 +890,26 @@ function ffnEvents(){return [
   {d:'2026-12-08',f:'2026-12-12',nom:'Championnats de France U18 25 m',niv:'National',src:'Calendrier FFN'},
   {d:'2026-12-20',nom:'Date limite des Interclubs U11 (organisés par le département)',niv:'Interclubs',src:'Annuel règlement FFN 2026'},
   {d:'2026-12-20',nom:'Date limite des Trophées U11',niv:'Départemental',src:'Annuel règlement FFN 2026'},
-  {d:'2026-11-22',nom:'Date limite des Trophées U13',niv:'Départemental',src:'Annuel règlement FFN 2026'},
-  {d:'2026-12-06',nom:"Découv'Nat · journée Avenirs (comité du Nord)",niv:'Départemental',lieu:'lieu à confirmer (Somain en décembre 2025)',qui:'Avenirs, mêmes courses pour 2015 et 2016-2017',src:'Indiqué par le coach ; résultats 2025 du comité du Nord'}]}
+  {d:'2026-11-22',nom:'Date limite des Trophées U13',niv:'Départemental',src:'Annuel règlement FFN 2026'}]}
+function nordEvents(){const S='Programme sportif 2026 du comité du Nord';const D='à définir (par district)';return [
+  {d:'2026-01-18',nom:"Découv'Nat · 1re journée",niv:'Départemental',lieu:D,qui:'Avenirs (2015 et après)',eng:'du 7 au 14 janvier · 3 € par épreuve',src:S},
+  {d:'2026-02-08',nom:'Critérium du Nord · plot 1',niv:'Départemental',lieu:D,qui:'2014 et avant',eng:'du 28 janvier au 4 février · 3 € par épreuve',src:S},
+  {d:'2026-03-01',nom:'Championnat du Nord Open Hiver des Maîtres',niv:'Départemental',lieu:'Armentières, centre aquatique Calyssia',qui:'Maîtres',eng:'du 18 au 25 février',src:S},
+  {d:'2026-03-22',nom:"Découv'Nat · 2e journée",niv:'Départemental',lieu:D,qui:'Avenirs (2015 et après)',eng:'du 11 au 18 mars · 3 € par épreuve',src:S},
+  {d:'2026-04-26',nom:'Critérium du Nord · plot 2',niv:'Départemental',lieu:D,qui:'2014 et avant',eng:'du 15 au 22 avril · 3 € par épreuve',src:S},
+  {d:'2026-05-10',nom:"Découv'Nat · 3e journée",niv:'Départemental',lieu:D,qui:'Avenirs (2015 et après)',eng:'du 29 avril au 6 mai · 3 € par épreuve',src:S},
+  {d:'2026-05-17',nom:'Critérium du Nord · plot 3',niv:'Départemental',lieu:D,qui:'2014 et avant',eng:'du 6 au 13 mai · 3 € par épreuve',src:S},
+  {d:'2026-05-31',nom:'Coupe 263 Benjamins',niv:'Régional',lieu:'à définir',qui:'U12-U13, sélection du Nord',src:S},
+  {d:'2026-06-13',f:'2026-06-14',nom:'Championnat départemental et Meeting du Nord Open (50 m)',niv:'Départemental',lieu:'Lille',qui:'2014 et avant',eng:'du 1er au 9 juin · 5 € par épreuve',src:S},
+  {d:'2026-06-21',nom:'Interclubs U11 (Avenirs)',niv:'Interclubs',lieu:'Saint-Amand-les-Eaux',qui:'Avenirs (2015 et après), équipes de 4',eng:'du 11 au 19 juin · 15 € par équipe',src:S},
+  {d:'2026-10-04',nom:'Critérium de rentrée · 1re journée (+ Maîtres)',niv:'Départemental',lieu:D,qui:'2017 et avant',eng:'du 23 au 30 septembre · 3 € par épreuve',src:S},
+  {d:'2026-10-18',nom:'Critérium de rentrée · 2e journée',niv:'Départemental',lieu:'Douai, piscine des Glacis',qui:'2017 et avant',eng:'du 7 au 14 octobre · 3 € par épreuve',src:S+' ; document de saison du club'},
+  {d:'2026-10-18',nom:'Date limite de sélection · Coupe 263 Avenirs',niv:'Régional',qui:'nés en 2016 (et éventuellement 2017)',src:S},
+  {d:'2026-10-31',f:'2026-11-01',nom:'Championnat du Nord Open (Webconfront@tion automne) et Championnat Hiver des Maîtres',niv:'Départemental',lieu:'Saint-Pol-sur-Mer',qui:'2014 et avant · Maîtres',eng:'du 15 au 28 octobre · 5 € par épreuve',src:S},
+  {d:'2026-11-28',f:'2026-11-29',nom:'Championnat régional U13 (25 m)',niv:'Régional',lieu:'Valenciennes',qui:'2013-2014, sur temps de qualification',src:'Document de saison du club'},
+  {d:'2026-12-06',nom:"Découv'Nat · 4e journée",niv:'Départemental',lieu:D+' ; Douai nageait à Somain en décembre 2025',qui:'Avenirs (2015 et après), mêmes courses pour 2015 et 2016-2017',eng:'du 25 novembre au 2 décembre · 3 € par épreuve (extranat + fichier Excel)',src:S},
+  {d:'2026-12-12',f:'2026-12-13',nom:'Championnat régional U18 (50 m)',niv:'Régional',lieu:'Abbeville',qui:'sur temps de qualification',src:'Document de saison du club'},
+  {d:'2026-12-01',nom:'Coupe de France des Départements (sélection du Nord) · en décembre, jour non précisé',niv:'National',lieu:'Cholet',qui:'sélection départementale',src:S}]}
 function clubEvents(){const P=META.g2?.planif;if(!P)return [];return P.echeances.map(e=>{const m=e.match(/(\d{1,2})\s*([a-zéû]+)?\s*(?:-\s*(\d{1,2})\s*([a-zéû]+))?\s*:\s*(.*)/i);
   if(!m) return {d:null,nom:e.trim(),niv:'Club',src:'Fiche Groupe 2',qui:'Groupe 2'};
   const mo1=MOIS[(m[2]||m[4]||'').toLowerCase()],mo2=MOIS[(m[4]||m[2]||'').toLowerCase()];const y=mo1>=9?2026:2027;
@@ -863,13 +918,13 @@ function clubEvents(){const P=META.g2?.planif;if(!P)return [];return P.echeances
 let echs=[];
 function renderEch(){
   const today=new Date().toISOString().slice(0,10), all=$('#eAll').checked;
-  const L=[...clubEvents(),...ffnEvents(),...echs.map((e,i)=>({...e,manual:i,src:'Ajouté par le coach'}))].filter(e=>all||!e.d||(e.f||e.d)>=today).sort((a,b)=>(a.d||'9999').localeCompare(b.d||'9999'));
+  const L=[...nordEvents(),...ffnEvents(),...echs.map((e,i)=>({...e,manual:i,src:'Ajouté par le coach'}))].filter(e=>all||!e.d||(e.f||e.d)>=today).sort((a,b)=>(a.d||'9999').localeCompare(b.d||'9999'));
   const col={National:'#e65100',Régional:'#1e88e5',Départemental:'#78909c',Interclubs:'#7e57c2',Club:'#0aa3a3'};
   $('#eList').innerHTML=L.map(e=>{const past=e.d&&(e.f||e.d)<today;const days=e.d&&!past?Math.round((new Date(e.d)-new Date(today))/864e5):null;
     return `<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);opacity:${past?.55:1}">
       <div style="min-width:74px;text-align:center;border-radius:8px;background:#f2f6fa;padding:6px"><div class="num" style="font-size:24px;color:var(--navy)">${e.d?e.d.slice(8,10):'?'}</div><div class="small muted">${e.d?new Date(e.d).toLocaleDateString('fr-FR',{month:'short',year:'numeric'}):'date à venir'}</div></div>
       <div style="flex:1"><b>${esc(e.nom)}</b> <span class="lvl" style="background:${col[e.niv]||'#78909c'}">${esc(e.niv)}</span>${past?' <span class="small muted">· passé</span>':days!==null?` <span class="small" style="color:var(--teal);font-weight:600">· dans ${days} j</span>`:''}
-      <div class="small muted">${e.f?'du '+fdate(e.d)+' au '+fdate(e.f):e.d?fdate(e.d):''}${e.lieu?' · '+esc(e.lieu):''}${e.qui?' · '+esc(e.qui):''} · <i>${esc(e.src)}</i>${e.manual!==undefined&&canWrite?` · <span class="link" data-edel="${e.manual}">supprimer</span>`:''}</div></div></div>`}).join('')||'<p class="muted">Aucune échéance à venir.</p>';
+      <div class="small muted">${e.f?'du '+fdate(e.d)+' au '+fdate(e.f):e.d?fdate(e.d):''}${e.lieu?' · '+esc(e.lieu):''}${e.qui?' · '+esc(e.qui):''}${e.eng?`<br><b style="color:var(--navy)">Engagements ${esc(e.eng)}</b>`:''} · <i>${esc(e.src)}</i>${e.manual!==undefined&&canWrite?` · <span class="link" data-edel="${e.manual}">supprimer</span>`:''}</div></div></div>`}).join('')||'<p class="muted">Aucune échéance à venir.</p>';
   const c=META.club, cats=CATS.map(k=>[k,SW.filter(s=>s.cat===k).length]);
   const nq=new Set();(META.qualifs||[]).filter(q=>q.tps).forEach(q=>SW.forEach(s=>{if(q.sexe===s.sexe&&s.an>=q.y1&&s.an<=q.y2){const b=qBest(s,q.epr,q.bas,'saison');if(b&&b.s<=tsec(q.tps))nq.add(q.niv+'|'+s.id)}}));
   const grp={};SW.forEach(s=>{const g=grpOf(s)||'Sans groupe';grp[g]=(grp[g]||0)+1});
@@ -908,7 +963,8 @@ function renderGroup(){const k=GCUR,G=gdoc(k),ro=!canWrite;
   const today=new Date().toISOString().slice(0,10);
   const ses=[...G.seances].sort((a,b)=>a.d<b.d?-1:1);
   const imp=k==='g2'&&META.g2?META.g2:null;
-  $('#grpView').innerHTML=`${imp&&imp.tests?g2TestsCard(imp).replace('style="margin-top:14px"','style="margin-bottom:14px"'):''}<div class="card"><h2>${GRP[k]} · effectif <span class="small muted">(${G.membres.length} nageurs)</span></h2>
+  const canT=canWrite||!db;
+  $('#grpView').innerHTML=`${testsCard(k,G)}${canT&&COACH?testsForm(k,G):''}<div class="card"><h2>${GRP[k]} · effectif <span class="small muted">(${G.membres.length} nageurs)</span></h2>
    <div style="columns:4 200px;column-gap:18px">${G.membres.map(m=>`<div style="break-inside:avoid;padding:4px 0;border-bottom:1px solid var(--line)">${mName(m)}${ro?'':` <span class="link small" data-gdel="${esc(m)}" title="retirer du groupe">✕</span>`}</div>`).join('')||'<p class="muted">Aucun nageur dans ce groupe.</p>'}</div>
    ${ro?'':`<div class="filters" style="margin-top:10px"><select id="gAddSel"><option value="">Ajouter un nageur…</option>${[...SW].sort((a,b)=>a.nom.localeCompare(b.nom)).filter(x=>!G.membres.includes(x.id)).map(x=>`<option value="${x.id}">${esc(x.nom)} (${x.an})</option>`).join('')}</select><input id="gAddNom" placeholder="ou nom d'un nouveau licencié" style="width:220px"><button class="btn ghost" id="gAdd">Ajouter</button></div>
 `}
@@ -920,6 +976,7 @@ function renderGroup(){const k=GCUR,G=gdoc(k),ro=!canWrite;
   ${imp?`<details class="card" style="margin-top:14px"><summary><b>Fiche Groupe 2 importée</b> <span class="small muted">chronos et minimax de début de saison</span></summary><div class="scroll" style="max-height:520px;margin-top:10px"><table id="g2T"></table></div></details>`:''}
   <div class="card" style="margin-top:14px"><h2>${GRP[k]} · notes du coach</h2><textarea id="gNotes" ${ro?'readonly':''} placeholder="Objectifs du cycle, consignes, remarques…">${esc(G.notes||'')}</textarea>${ro?'':'<button class="btn ghost" id="gNotesSave" style="margin-top:6px">Enregistrer</button>'}</div>`;
   if(imp)renderG2();
+  bindTests(k);
   if(ro)return;
   const done=async()=>{const ok=await gsave(k);renderGroup();fillGroups();return ok};
   $('#gAdd').onclick=()=>{const v=$('#gAddSel').value||($('#gAddNom').value.trim()?'n:'+$('#gAddNom').value.trim():'');if(v&&!G.membres.includes(v)){G.membres.push(v);done()}};
@@ -994,7 +1051,7 @@ async function initDB(){
     const timer=setTimeout(()=>{},10000);
     db.collection('fiches').onSnapshot(snap=>{clearTimeout(timer);const o={};(snap.docs||snap).forEach(d=>{o[d.id]=d.data?d.data():d});manual.fiches={...manual.fiches,...o};fillGroups();rerender()},()=>{});
     Object.keys(GRP).forEach(k=>db.doc('groupes/'+k).onSnapshot(d=>{const v=d&&(d.data?d.data():d);if(v&&v.membres){gdata[k]=v;fillGroups();if(VIEW==='entrainement'&&GCUR===k)renderGroup()}},()=>{}));
-    db.doc('groupes/g2tests').onSnapshot(d=>{const v=d&&(d.data?d.data():d);if(v&&v.tests&&META.g2){const cur=META.g2.tests||[];if(v.tests.length>=cur.length){META.g2.tests=v.tests;if(VIEW==='entrainement')renderGroup()}}},()=>{});
+    Object.keys(GRP).forEach(k=>db.doc('groupes/'+k+'tests').onSnapshot(d=>{const v=d&&(d.data?d.data():d);if(v&&v.tests){const cur=testsOf(k);if(v.tests.length>=cur.length){TESTS[k]=v.tests;if(k==='g2'&&META.g2)META.g2.tests=v.tests;if(VIEW==='entrainement'&&GCUR===k)renderGroup()}}},()=>{}));
     db.doc('echeances/list').onSnapshot(d=>{const v=d&&(d.data?d.data():d);if(v&&v.items){echs=v.items;if(VIEW==='echeances')renderEch()}},()=>{});
     db.doc('qualifs/list').onSnapshot(d=>{const v=d&&(d.data?d.data():d);if(v&&v.items){manual.qualifs=v.items;rerender()}},()=>{});
   }catch(e){}
